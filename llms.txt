@@ -1,0 +1,148 @@
+# spLeakage
+
+> Detect and quantify **spatial information leakage** in predictive
+> modelling.
+
+`spLeakage` is a *diagnostic* R package. Given spatial data and a
+train/test split (or an existing modelling workflow), it:
+
+- **detects and scores** how much a validation scheme leaks information
+  through spatial autocorrelation (the **Spatial Leakage Index**),
+- **estimates the optimism** that leakage induces in reported accuracy
+  (*“your RMSE is likely ~14% optimistic”*), and
+- **recommends an appropriate validation strategy** for your sampling
+  design and prediction target — including when spatial cross-validation
+  is *not* the right choice.
+
+It **audits rather than generates** folds, interoperating with
+established spatial cross-validation packages (CAST, blockCV,
+spatialsample, mlr3spatiotempcv) rather than competing with them.
+
+## Status
+
+In development (phase P2 — diagnostic, optimism, and recommendation
+engine implemented; `R CMD check` clean). See
+[`docs/VISION.md`](docs/VISION.md) for the methodology, full feature
+catalogue, and roadmap, [`docs/METHOD-SLI.md`](docs/METHOD-SLI.md) and
+[`docs/METHOD-EMULATOR.md`](docs/METHOD-EMULATOR.md) for the locked
+method specs, and [`docs/PAPER.md`](docs/PAPER.md) for the paper plan.
+
+## Quick example
+
+``` r
+
+library(spLeakage)
+
+# Declare where the model will actually be used (wall-to-wall map):
+tgt <- prediction_target(grid = pred_grid, type = "grid")
+
+# 1. Diagnose an existing split (signed leakage index + uncertainty):
+lk  <- detect_leakage(data, split = my_folds, target = tgt,
+                      response = "y", n_boot = 300)
+lk            # SLI_rho, 90% CI, NNDM W, verdict
+plot(lk)      # observed-vs-deployment NN-distance ECDFs
+
+# 2. Quantify the optimism it causes:
+estimate_optimism(data, split = my_folds, response = "y", control = "block")
+
+# 3. Get a design-aware recommendation (design is declared, not inferred):
+recommend_validation(data, estimand = "prediction",
+                     design = "clustered", target = "grid")
+```
+
+See the package vignette for a full worked example.
+
+## Installation
+
+Not yet on CRAN. Install the development version locally with
+`devtools::install("spLeakage")`.
+
+## License
+
+MIT © Olatunji Johnson
+
+# Package index
+
+## Overview
+
+- [`spLeakage`](spLeakage-package.md)
+  [`spLeakage-package`](spLeakage-package.md) : spLeakage: Detect and
+  Quantify Spatial Information Leakage
+
+## Diagnose leakage
+
+Detect and quantify spatial information leakage in a split.
+
+- [`detect_leakage()`](detect_leakage.md) : Detect and quantify spatial
+  leakage in a train/test split
+- [`sli()`](sli.md) : Extract the Spatial Leakage Index
+- [`plot(`*`<leakage_diagnosis>`*`)`](plot.leakage_diagnosis.md) : Plot
+  a leakage diagnosis
+- [`estimate_dependence()`](estimate_dependence.md) : Estimate spatial
+  dependence (variogram, range, correlation, anisotropy)
+- [`prediction_target()`](prediction_target.md) : Declare the prediction
+  target (deployment geometry)
+
+## Quantify optimism
+
+How inflated is the reported accuracy?
+
+- [`estimate_optimism()`](estimate_optimism.md) : Estimate the optimism
+  (accuracy inflation) of a cross-validation scheme
+- [`predict_optimism()`](predict_optimism.md) : Predict optimism from
+  the calibrated emulator (fast, no model refitting)
+- [`deleak_estimate()`](deleak_estimate.md) : De-leaked (bias-corrected)
+  accuracy estimate
+
+## Recommend & report
+
+- [`recommend_validation()`](recommend_validation.md) : Recommend a
+  validation strategy for a sampling design and prediction target
+- [`rank_cv_schemes()`](rank_cv_schemes.md) : Rank candidate
+  cross-validation schemes by deployment match
+- [`audit_workflow()`](audit_workflow.md) : Audit a cross-validation
+  workflow for spatial leakage
+- [`report_leakage()`](report_leakage.md) : Assemble a leakage report
+  (scorecard)
+
+## Multi-channel leakage
+
+Grouped/duplicated-location, feature-space, and temporal leakage.
+
+- [`detect_group_leakage()`](detect_group_leakage.md) : Detect grouped /
+  duplicated-location leakage in a split
+- [`group_kfold()`](group_kfold.md) : Group-aware k-fold assignment (the
+  fix for grouped leakage)
+- [`detect_feature_leakage()`](detect_feature_leakage.md) : Detect
+  feature-space (covariate) leakage
+- [`detect_extraction_leakage()`](detect_extraction_leakage.md) : Detect
+  covariate-extraction-overlap leakage
+- [`detect_temporal_leakage()`](detect_temporal_leakage.md) : Detect
+  temporal (lookahead) leakage in a split
+- [`temporal_kfold()`](temporal_kfold.md) : Forward-chaining temporal
+  cross-validation (the fix for lookahead leakage)
+- [`detect_st_leakage()`](detect_st_leakage.md) : Detect joint
+  spatiotemporal leakage
+- [`trend_strength()`](trend_strength.md) : Trend strength: large-scale
+  structure that resists extrapolation
+
+## Validation design
+
+Where to place independent validation points to estimate true accuracy.
+
+- [`design_validation()`](design_validation.md) : Design an optimal
+  independent validation sample
+
+## Cross-validation schemes
+
+- [`spatial_block_cv()`](spatial_block_cv.md) : Spatial block
+  cross-validation folds
+
+# Articles
+
+### All vignettes
+
+- [Leakage channels beyond distance](channels.md):
+- [Quantify, correct, and design](quantify-correct.md):
+- [Detecting and quantifying spatial leakage with
+  spLeakage](spLeakage.md):
