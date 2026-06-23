@@ -1,0 +1,67 @@
+# spLeakage
+
+> Detect and quantify **spatial information leakage** in predictive modelling.
+
+`spLeakage` is a *diagnostic* R package. Given spatial data and a train/test split
+(or an existing modelling workflow), it:
+
+- **detects** leakage across seven channels — geographic autocorrelation (the signed
+  **Spatial Leakage Index**), grouped/duplicated-location, feature-space,
+  covariate-extraction-overlap, temporal, joint spatiotemporal, and large-scale trend;
+- **quantifies the optimism** leakage induces (*"your accuracy is ~26% optimistic"*),
+  with an empirical route and a fast calibrated **emulator** (adaptive intervals);
+- **corrects it** — a bias-corrected ("de-leaked") accuracy estimate with a CI, which
+  can even correct a published number without refitting;
+- **recommends** an appropriate validation strategy (design-aware, including when
+  spatial CV is *not* right) and **ranks** candidate schemes; and
+- **designs** where to place a budget of independent validation points for the most
+  precise estimate of true accuracy.
+
+It **audits rather than generates** folds, interoperating with established spatial
+cross-validation packages (CAST, blockCV, spatialsample, mlr3spatiotempcv).
+
+Each leakage channel comes with a paired fix (`group_kfold`, `temporal_kfold`,
+target-matched controls), and proper scoring rules (Brier/log-loss/Poisson) make
+optimism meaningful for disease-prevalence and count responses.
+
+## Status
+
+`R CMD check` clean (0/0/0). Tutorials: **Getting started**, **Leakage channels beyond
+distance**, and **Quantify, correct, and design** (see the package vignettes / website
+articles). The method is backed by a GP optimism **theory** (the SLI is a near-
+sufficient statistic for true optimism), a benchmark against NNDM, two real-data
+validations, and a 16-dataset meta-audit. See [`docs/VISION.md`](docs/VISION.md),
+[`docs/THEORY.md`](docs/THEORY.md), and [`docs/PAPER.md`](docs/PAPER.md).
+
+## Quick example
+
+```r
+library(spLeakage)
+
+# Declare where the model will actually be used (wall-to-wall map):
+tgt <- prediction_target(grid = pred_grid, type = "grid")
+
+# 1. Diagnose an existing split (signed leakage index + uncertainty):
+lk  <- detect_leakage(data, split = my_folds, target = tgt,
+                      response = "y", n_boot = 300)
+lk            # SLI_rho, 90% CI, NNDM W, verdict
+plot(lk)      # observed-vs-deployment NN-distance ECDFs
+
+# 2. Quantify the optimism it causes:
+estimate_optimism(data, split = my_folds, response = "y", control = "block")
+
+# 3. Get a design-aware recommendation (design is declared, not inferred):
+recommend_validation(data, estimand = "prediction",
+                     design = "clustered", target = "grid")
+```
+
+See the package vignette for a full worked example.
+
+## Installation
+
+Not yet on CRAN. Install the development version locally with
+`devtools::install("spLeakage")`.
+
+## License
+
+MIT © Olatunji Johnson

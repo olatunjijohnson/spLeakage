@@ -1,0 +1,26 @@
+# R
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+Rplots.pdf
+/*.tar.gz
+/*.Rcheck/
+
+# LaTeX build artifacts (keep .tex and .pdf)
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.toc
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz
+paper/*.run.xml
+paper/*.bcf
+
+# OS
+.DS_Store
+Thumbs.db

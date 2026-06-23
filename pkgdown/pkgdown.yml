@@ -1,0 +1,8 @@
+pandoc: 3.8.3
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  channels: channels.html
+  quantify-correct: quantify-correct.html
+  spLeakage: spLeakage.html
+last_built: 2026-06-23T14:55Z

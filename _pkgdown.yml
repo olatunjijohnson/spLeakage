@@ -1,0 +1,56 @@
+url: ~
+
+# Write to pkgdown/ so the planning docs/ folder is never clobbered.
+destination: pkgdown
+
+template:
+  bootstrap: 5
+
+reference:
+- title: Overview
+  contents:
+  - spLeakage-package
+
+- title: Diagnose leakage
+  desc: Detect and quantify spatial information leakage in a split.
+  contents:
+  - detect_leakage
+  - sli
+  - plot.leakage_diagnosis
+  - estimate_dependence
+  - prediction_target
+
+- title: Quantify optimism
+  desc: How inflated is the reported accuracy?
+  contents:
+  - estimate_optimism
+  - predict_optimism
+  - deleak_estimate
+
+- title: Recommend & report
+  contents:
+  - recommend_validation
+  - rank_cv_schemes
+  - audit_workflow
+  - report_leakage
+
+- title: Multi-channel leakage
+  desc: Grouped/duplicated-location, feature-space, and temporal leakage.
+  contents:
+  - detect_group_leakage
+  - group_kfold
+  - detect_feature_leakage
+  - detect_extraction_leakage
+  - detect_temporal_leakage
+  - temporal_kfold
+  - detect_st_leakage
+  - trend_strength
+
+- title: Validation design
+  desc: Where to place independent validation points to estimate true accuracy.
+  contents:
+  - design_validation
+
+- title: Cross-validation schemes
+  contents:
+  - spatial_block_cv

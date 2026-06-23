@@ -1,0 +1,45 @@
+Package: spLeakage
+Title: Detect and Quantify Spatial Information Leakage in Predictive Modelling
+Version: 0.1.0
+Authors@R:
+    person("Olatunji", "Johnson", email = "teejaystatistics@gmail.com",
+           role = c("aut", "cre"))
+Description: Diagnostic tools for spatial information leakage in predictive
+    modelling. Given spatial data and a train/test split (or an existing
+    modelling workflow), spLeakage detects and quantifies how much a validation
+    scheme leaks information through spatial autocorrelation, estimates the
+    resulting optimism in reported accuracy, and recommends an appropriate
+    validation strategy for the user's sampling design and prediction target.
+    It audits rather than generates folds, interoperating with established
+    spatial cross-validation packages.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Depends:
+    R (>= 4.1)
+Imports:
+    sf,
+    stats,
+    graphics,
+    grDevices,
+    utils
+Suggests:
+    terra,
+    gstat,
+    FNN,
+    xgboost,
+    ranger,
+    mgcv,
+    fields,
+    blockCV,
+    rsample,
+    spatialsample,
+    caret,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+URL: https://github.com/olatunjijohnson/spLeakage
+BugReports: https://github.com/olatunjijohnson/spLeakage/issues

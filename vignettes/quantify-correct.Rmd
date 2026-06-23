@@ -1,0 +1,81 @@
+---
+title: "Quantify, correct, and design"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Quantify, correct, and design}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(spLeakage)
+```
+
+Detecting leakage is the first step. `spLeakage` also quantifies the *consequence*
+(how inflated your accuracy is), corrects it, recommends a better scheme, and designs
+where to collect independent validation data.
+
+```{r data}
+set.seed(1)
+nc <- 8; ce <- cbind(runif(nc, .1, .9), runif(nc, .1, .9)); cl <- sample(nc, 400, TRUE)
+xy <- ce[cl, ] + cbind(rnorm(400, 0, .04), rnorm(400, 0, .04))
+d <- data.frame(x = pmin(pmax(xy[, 1], 0), 1), y = pmin(pmax(xy[, 2], 0), 1))
+d$z <- sin(2 * pi * d$x) + cos(2 * pi * d$y) + rnorm(400, 0, .15)
+folds <- sample(rep_len(1:10, 400))
+grid <- as.matrix(expand.grid(x = seq(0, 1, .07), y = seq(0, 1, .07)))
+tgt <- prediction_target(grid = grid, type = "grid")
+```
+
+## Quantify the optimism
+
+How much is the reported accuracy inflated, relative to a leakage-controlled scheme?
+
+```{r}
+estimate_optimism(d, folds, response = "z", coords = c("x", "y"))
+```
+
+For binary (disease-prevalence) or count responses, use a proper scoring rule:
+
+```{r}
+db <- d; db$z <- rbinom(400, 1, plogis(2 * sin(2 * pi * d$x)))
+estimate_optimism(db, folds, response = "z", coords = c("x", "y"), metric = "brier")
+```
+
+## Correct it: the de-leaked estimate
+
+The de-leaked estimate is the accuracy you should report, with a confidence interval.
+It can even correct a *published* number without refitting.
+
+```{r}
+deleak_estimate(d, folds, response = "z", coords = c("x", "y"),
+                reported = 0.30, n_boot = 200)
+```
+
+## Fast emulator route
+
+`predict_optimism()` uses a calibrated emulator (no refitting); it refuses queries
+outside its area of applicability.
+
+```{r}
+predict_optimism(d, folds, tgt, response = "z", coords = c("x", "y"), model = "idw")
+```
+
+## Recommend a validation scheme
+
+`recommend_validation()` gives design-aware guidance; `rank_cv_schemes()` ranks
+candidate schemes by how well they match deployment.
+
+```{r}
+recommend_validation(estimand = "prediction", design = "clustered", target = "grid")
+rank_cv_schemes(d, tgt, response = "z", coords = c("x", "y"))
+```
+
+## Design where to validate
+
+Given a budget of independent validation points, where should they go to estimate
+true accuracy most precisely?
+
+```{r}
+design_validation(d, tgt, budget = 25, response = "z", coords = c("x", "y"))
+```

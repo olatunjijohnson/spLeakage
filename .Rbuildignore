@@ -1,0 +1,15 @@
+^docs$
+^.*\.Rproj$
+^\.Rproj\.user$
+^CLAUDE\.md$
+^data-raw$
+^\.github$
+^Rplots\.pdf$
+^cran-comments\.md$
+^CASE-STUDY.*$
+^_pkgdown\.yml$
+^pkgdown$
+^paper-figures$
+^paper$
+^\.gitignore$
+^\.git$

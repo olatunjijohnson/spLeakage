@@ -1,0 +1,94 @@
+---
+title: "Detecting and quantifying spatial leakage with spLeakage"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Detecting and quantifying spatial leakage with spLeakage}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 6, fig.height = 4)
+```
+
+`spLeakage` **audits** a train/test split: it does not generate folds (that space is
+covered by `CAST`, `blockCV`, `spatialsample`). Given a split, a prediction target,
+and the data, it answers three questions:
+
+1. **Is there leakage, and how much?** — the signed Spatial Leakage Index (`SLI`).
+2. **So how inflated are my numbers?** — `estimate_optimism()`.
+3. **What should I have done?** — `recommend_validation()`.
+
+The guiding idea: *leakage and optimism are only well-posed relative to a declared
+sampling design, estimand, and prediction target.*
+
+```{r setup}
+library(spLeakage)
+```
+
+## A clustered sample (the canonical leakage regime)
+
+```{r data}
+set.seed(3)
+nc <- 8
+centers <- cbind(runif(nc, 0.1, 0.9), runif(nc, 0.1, 0.9))
+cl <- sample(nc, 500, replace = TRUE)
+xy <- centers[cl, ] + cbind(rnorm(500, 0, 0.04), rnorm(500, 0, 0.04))
+d <- data.frame(x = pmin(pmax(xy[, 1], 0), 1), y = pmin(pmax(xy[, 2], 0), 1))
+d$z <- sin(2 * pi * d$x) + cos(2 * pi * d$y) + rnorm(500, 0, 0.15)
+```
+
+We will map wall-to-wall over the unit square:
+
+```{r target}
+s <- seq(0.025, 0.975, length.out = 20)
+tgt <- prediction_target(grid = as.matrix(expand.grid(x = s, y = s)), type = "grid")
+```
+
+## 1. Detect leakage in a random 80/20-style 10-fold split
+
+```{r detect}
+folds <- sample(rep_len(1:10, nrow(d)))
+lk <- detect_leakage(d, split = folds, target = tgt, response = "z",
+                     coords = c("x", "y"), n_boot = 300)
+lk
+plot(lk)          # observed (CV) vs target (deployment) NN-distance ECDFs
+```
+
+A positive `SLI_rho` whose interval excludes zero means the split is optimistically
+leaking. `plot(lk, which = "map")` shows *where*.
+
+## 2. Quantify the optimism
+
+```{r optimism}
+opt <- estimate_optimism(d, split = folds, response = "z", coords = c("x", "y"),
+                         control = "block")
+opt
+```
+
+The reported (random-CV) error is compared against a leakage-controlled,
+design-matched scheme. The gap is the optimism — here a large positive inflation.
+
+## 3. Get a design-aware recommendation
+
+Declare the estimand and design (the design *cannot* be inferred from coordinates):
+
+```{r recommend}
+recommend_validation(d, estimand = "prediction", design = "clustered",
+                     target = "grid", coords = c("x", "y"))
+```
+
+For a **probability sample** the advice flips — random CV becomes correct and spatial
+CV is over-pessimistic:
+
+```{r recommend2}
+recommend_validation(estimand = "prediction", design = "probability", target = "grid")
+```
+
+## Put it together: a scorecard
+
+```{r report}
+rec <- recommend_validation(d, estimand = "prediction", design = "clustered",
+                            target = "grid", coords = c("x", "y"))
+report_leakage(lk, optimism = opt, recommendation = rec)
+```
