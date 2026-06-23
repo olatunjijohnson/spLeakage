@@ -9,17 +9,17 @@ Rplots.pdf
 /*.Rcheck/
 
 # LaTeX build artifacts (keep .tex and .pdf)
-paper/*.aux
-paper/*.log
-paper/*.out
-paper/*.bbl
-paper/*.blg
-paper/*.toc
-paper/*.fls
-paper/*.fdb_latexmk
-paper/*.synctex.gz
-paper/*.run.xml
-paper/*.bcf
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.run.xml
+*.bcf
 
 # OS
 .DS_Store
