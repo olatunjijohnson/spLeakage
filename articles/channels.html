@@ -67,13 +67,17 @@
 
     
     
-<p>Spatial autocorrelation is only one way a train/test split can leak.
-<code>spLeakage</code> provides a diagnostic for each channel, and a
-paired fix where one exists.</p>
 <div class="section level2">
-<h2 id="geographic-autocorrelation-leakage">1. Geographic (autocorrelation) leakage<a class="anchor" aria-label="anchor" href="#geographic-autocorrelation-leakage"></a>
+<h2 id="why-distance-is-not-the-whole-story">Why “distance” is not the whole story<a class="anchor" aria-label="anchor" href="#why-distance-is-not-the-whole-story"></a>
 </h2>
-<p>The core diagnostic: the signed Spatial Leakage Index.</p>
+<p>The geographic Spatial Leakage Index (the <a href="spLeakage.html">getting-started vignette</a>) catches the most
+common leak: test points that are close to training points <em>in
+space</em>. But a train/test split can leak information through several
+other channels, each of which inflates your accuracy in a way the
+geographic index alone will not see. This vignette walks through each
+channel, shows the <code>spLeakage</code> diagnostic for it, and — where
+one exists — the paired fix.</p>
+<p>A small clustered dataset serves as a running example.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">nc</span> <span class="op">&lt;-</span> <span class="fl">8</span>; <span class="va">ce</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">nc</span>, <span class="fl">.1</span>, <span class="fl">.9</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">nc</span>, <span class="fl">.1</span>, <span class="fl">.9</span><span class="op">)</span><span class="op">)</span>; <span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">nc</span>, <span class="fl">400</span>, <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -81,9 +85,17 @@ paired fix where one exists.</p>
 <span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="va">xy</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="va">xy</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">d</span><span class="op">$</span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">pi</span> <span class="op">*</span> <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">cos</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">pi</span> <span class="op">*</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">400</span>, <span class="fl">0</span>, <span class="fl">.15</span><span class="op">)</span></span>
 <span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">.07</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">.07</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">tgt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prediction_target.html">prediction_target</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="va">grid</span>, type <span class="op">=</span> <span class="st">"grid"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/detect_leakage.html">detect_leakage</a></span><span class="op">(</span><span class="va">d</span>, split <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fl">400</span><span class="op">)</span><span class="op">)</span>, target <span class="op">=</span> <span class="va">tgt</span>, response <span class="op">=</span> <span class="st">"z"</span>,</span>
+<span><span class="va">tgt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prediction_target.html">prediction_target</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="va">grid</span>, type <span class="op">=</span> <span class="st">"grid"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="geographic-autocorrelation-leakage">1. Geographic (autocorrelation) leakage<a class="anchor" aria-label="anchor" href="#geographic-autocorrelation-leakage"></a>
+</h2>
+<p>This is the core channel, recapped here for completeness: the signed
+Spatial Leakage Index from the distance between the CV and deployment
+nearest-neighbour distributions. A positive <code>SLI_rho</code> means
+optimistic leakage.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/detect_leakage.html">detect_leakage</a></span><span class="op">(</span><span class="va">d</span>, split <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fl">400</span><span class="op">)</span><span class="op">)</span>, target <span class="op">=</span> <span class="va">tgt</span>, response <span class="op">=</span> <span class="st">"z"</span>,</span>
 <span>               coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;leakage_diagnosis&gt;</span></span>
 <span><span class="co">#&gt;   target            : grid   |  n = 400, test = 400, folds = 10</span></span>
@@ -91,13 +103,18 @@ paired fix where one exists.</p>
 <span><span class="co">#&gt;   SLI_d  (signed)   : +0.034   (A = +0.09289, phi = 2.72)</span></span>
 <span><span class="co">#&gt;   retained corr.    : c_obs = 0.985 vs c_pred = 0.893</span></span>
 <span><span class="co">#&gt;   W (NNDM) / delta  : 0.09289 / +1.00</span></span></code></pre></div>
+<p>See <code><a href="../articles/spLeakage.html">vignette("spLeakage")</a></code> for a full reading of this
+output.</p>
 </div>
 <div class="section level2">
 <h2 id="grouped-duplicated-location-leakage">2. Grouped / duplicated-location leakage<a class="anchor" aria-label="anchor" href="#grouped-duplicated-location-leakage"></a>
 </h2>
-<p>Repeated measurements at the same site, split across folds, leak
-exactly.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p>A subtle but <strong>exact</strong> leak: the same site measured more
+than once (repeat surveys, revisited plots, co-located records). If two
+records from one location land in different folds, the model is tested
+on a point it has, in effect, already seen.</p>
+<p>We inject 60 duplicated locations and check a random split:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">d</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">400</span>, <span class="fl">60</span><span class="op">)</span>, <span class="op">]</span><span class="op">)</span>            <span class="co"># 60 duplicated locations</span></span>
 <span><span class="va">gl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_group_leakage.html">detect_group_leakage</a></span><span class="op">(</span><span class="va">dd</span>, split <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">dd</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>                           coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
@@ -106,77 +123,141 @@ exactly.</p>
 <span><span class="co">#&gt;   grouping        : coordinates (tol = 0)  |  n = 460, groups = 400, multi-member = 60</span></span>
 <span><span class="co">#&gt;   test leaked via shared group : 112 / 460 (24.3%)</span></span>
 <span><span class="co">#&gt;   groups split across folds    : 56</span></span>
-<span><span class="co">#&gt;   [!] fix: group_kfold() keeps co-located/grouped records together</span></span>
-<span><span class="co"># fix: keep co-located records together</span></span>
-<span><span class="va">gk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/group_kfold.html">group_kfold</a></span><span class="op">(</span><span class="va">dd</span>, k <span class="op">=</span> <span class="fl">10</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   [!] fix: group_kfold() keeps co-located/grouped records together</span></span></code></pre></div>
+<p><code>test leaked via shared group</code> is the count (and fraction)
+of test points whose location also appears in the training set. The fix,
+<code><a href="../reference/group_kfold.html">group_kfold()</a></code>, keeps all records from a location
+<strong>together</strong> in the same fold, driving that fraction to
+zero:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">gk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/group_kfold.html">group_kfold</a></span><span class="op">(</span><span class="va">dd</span>, k <span class="op">=</span> <span class="fl">10</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/detect_group_leakage.html">detect_group_leakage</a></span><span class="op">(</span><span class="va">dd</span>, <span class="va">gk</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">frac_leaked</span></span>
 <span><span class="co">#&gt; [1] 0</span></span></code></pre></div>
+<p>This channel is what the malaria case study in the paper traced a
+spurious geographic SLI back to: co-located repeat surveys, not genuine
+autocorrelation.</p>
 </div>
 <div class="section level2">
 <h2 id="feature-space-covariate-leakage">3. Feature-space (covariate) leakage<a class="anchor" aria-label="anchor" href="#feature-space-covariate-leakage"></a>
 </h2>
-<p>Test points close to training in <em>covariate</em> space are also
-easy. Supply the deployment covariates to get a signed index.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p>A test point can be far in <em>geographic</em> space yet close in
+<em>covariate</em> space — and then it is still easy to predict.
+Conversely, if deployment requires extrapolating a covariate beyond its
+training range, your CV (which never extrapolates) is optimistic.
+Supplying the deployment covariates yields a signed feature-space index
+(an area-of-applicability comparison, after Meyer &amp; Pebesma
+2021).</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d</span><span class="op">$</span><span class="va">cov</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">$</span><span class="va">z</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">400</span>, <span class="fl">0</span>, <span class="fl">.3</span><span class="op">)</span></span>
 <span><span class="va">newdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>cov <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">300</span>, <span class="fl">1.2</span>, <span class="fl">2.2</span><span class="op">)</span><span class="op">)</span>   <span class="co"># deployment extrapolates the covariate</span></span>
-<span><span class="fu"><a href="../reference/detect_feature_leakage.html">detect_feature_leakage</a></span><span class="op">(</span><span class="va">d</span>, <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">400</span><span class="op">)</span><span class="op">)</span>, covariates <span class="op">=</span> <span class="st">"cov"</span>, newdata <span class="op">=</span> <span class="va">newdata</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/detect_feature_leakage.html">detect_feature_leakage</a></span><span class="op">(</span><span class="va">d</span>, <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">400</span><span class="op">)</span><span class="op">)</span>, covariates <span class="op">=</span> <span class="st">"cov"</span>,</span>
+<span>                       newdata <span class="op">=</span> <span class="va">newdata</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;feature_leakage&gt;</span></span>
 <span><span class="co">#&gt;   covariates        : cov</span></span>
 <span><span class="co">#&gt;   test in feature-AOA : 91% (interpolation in covariate space)</span></span>
 <span><span class="co">#&gt;   feature SLI (signed): +3.816  [OPTIMISTIC feature leakage]</span></span>
 <span><span class="co">#&gt;   mean NN reach (rel) : test 1.22 vs deployment 5.04</span></span></code></pre></div>
+<p><code>test in feature-AOA</code> reports how much of the test set is
+interpolation in covariate space; the signed <code>feature SLI</code>
+compares CV’s covariate-space reach to deployment’s. A positive value
+warns that deployment will go where CV never tested.</p>
 </div>
 <div class="section level2">
 <h2 id="covariate-extraction-overlap-leakage">4. Covariate-extraction-overlap leakage<a class="anchor" aria-label="anchor" href="#covariate-extraction-overlap-leakage"></a>
 </h2>
-<p>If covariates are built from a focal window of radius <code>r</code>,
-test windows that overlap training windows leak. The fix is a buffer of
-<code>2r</code>.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/detect_extraction_leakage.html">detect_extraction_leakage</a></span><span class="op">(</span><span class="va">d</span>, <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">400</span><span class="op">)</span><span class="op">)</span>, radius <span class="op">=</span> <span class="fl">0.08</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
+<p>Common in remote sensing and SDMs: covariates are extracted from a
+<em>window</em> (a focal buffer of radius <code>r</code>) around each
+point. If a test window overlaps a training window, they share input
+pixels — leakage through the feature construction itself, before any
+model is fit.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/detect_extraction_leakage.html">detect_extraction_leakage</a></span><span class="op">(</span><span class="va">d</span>, <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">400</span><span class="op">)</span><span class="op">)</span>, radius <span class="op">=</span> <span class="fl">0.08</span>,</span>
+<span>                          coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;extraction_leakage&gt;  extraction radius = 0.08</span></span>
 <span><span class="co">#&gt;   test windows overlapping a training window (&lt; 2r): 400 / 400 (100.0%)</span></span>
 <span><span class="co">#&gt;   test windows containing a training location (&lt; r): 400 / 400 (100.0%)</span></span>
 <span><span class="co">#&gt;   [!] fix: separate train/test by a buffer &gt;= 0.16 (= 2 x radius)</span></span></code></pre></div>
+<p>The diagnostic counts test windows that overlap a training window
+(closer than <code>2r</code>) or that contain a training location
+(closer than <code>r</code>), and recommends a separating buffer of
+<code>2r</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="temporal-and-joint-spatiotemporal-leakage">5. Temporal and joint spatiotemporal leakage<a class="anchor" aria-label="anchor" href="#temporal-and-joint-spatiotemporal-leakage"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>With a time dimension, a random split can train on the
+<strong>future</strong> to predict the past — impossible at deployment.
+We build a small space–time panel (each location revisited over 10 time
+steps):</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">st</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">40</span>, each <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, <span class="op">]</span>; <span class="va">st</span><span class="op">$</span><span class="va">t</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fl">40</span><span class="op">)</span></span>
-<span><span class="co"># random CV trains on the future:</span></span>
 <span><span class="fu"><a href="../reference/detect_temporal_leakage.html">detect_temporal_leakage</a></span><span class="op">(</span><span class="va">st</span>, <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">st</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, time <span class="op">=</span> <span class="st">"t"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;temporal_leakage&gt;</span></span>
 <span><span class="co">#&gt;   time column       : t   |  n test = 400</span></span>
 <span><span class="co">#&gt;   lookahead leakage : 360 / 400 (90.0%) test points trained on the future</span></span>
 <span><span class="co">#&gt;   mean time-to-nearest-training : 0</span></span>
-<span><span class="co">#&gt;   [!] fix: temporal_kfold() (forward-chaining CV)</span></span>
-<span><span class="co"># the joint space-time view catches leakage space-only analysis misses:</span></span>
-<span><span class="fu"><a href="../reference/detect_st_leakage.html">detect_st_leakage</a></span><span class="op">(</span><span class="va">st</span>, <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">st</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, time <span class="op">=</span> <span class="st">"t"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   [!] fix: temporal_kfold() (forward-chaining CV)</span></span></code></pre></div>
+<p><code>lookahead leakage</code> is the fraction of test points whose
+nearest training record lies in their future. The forward-chaining fix
+(<code><a href="../reference/temporal_kfold.html">temporal_kfold()</a></code>) removes it:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/temporal_kfold.html">temporal_kfold</a></span><span class="op">(</span><span class="va">st</span>, k <span class="op">=</span> <span class="fl">5</span>, time <span class="op">=</span> <span class="st">"t"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/detect_temporal_leakage.html">detect_temporal_leakage</a></span><span class="op">(</span><span class="va">st</span>, <span class="va">fc</span>, time <span class="op">=</span> <span class="st">"t"</span><span class="op">)</span><span class="op">$</span><span class="va">lookahead_frac</span></span>
+<span><span class="co">#&gt; [1] 0</span></span></code></pre></div>
+<p>Crucially, leakage can hide in the <em>joint</em> space–time
+structure even when the space-only and time-only views each look
+acceptable. <code><a href="../reference/detect_st_leakage.html">detect_st_leakage()</a></code> measures all three in a
+single scaled space–time metric:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/detect_st_leakage.html">detect_st_leakage</a></span><span class="op">(</span><span class="va">st</span>, <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">st</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, time <span class="op">=</span> <span class="st">"t"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;st_leakage&gt;  (one-step-ahead forecast deployment)</span></span>
 <span><span class="co">#&gt;   space-only SLI : +0.000  [matched]</span></span>
 <span><span class="co">#&gt;   time-only  SLI : +0.370  [optimistic leakage]</span></span>
 <span><span class="co">#&gt;   JOINT space-time SLI : +0.228  [optimistic leakage]</span></span>
 <span><span class="co">#&gt;   median space-time NN: test 0.115 vs deployment 0.370 (in dependence units)</span></span></code></pre></div>
-<p>The fix for temporal leakage is forward-chaining CV:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/temporal_kfold.html">temporal_kfold</a></span><span class="op">(</span><span class="va">st</span>, k <span class="op">=</span> <span class="fl">5</span>, time <span class="op">=</span> <span class="st">"t"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/detect_temporal_leakage.html">detect_temporal_leakage</a></span><span class="op">(</span><span class="va">st</span>, <span class="va">fc</span>, time <span class="op">=</span> <span class="st">"t"</span><span class="op">)</span><span class="op">$</span><span class="va">lookahead_frac</span></span>
-<span><span class="co">#&gt; [1] 0</span></span></code></pre></div>
+<p>If the <code>JOINT space-time SLI</code> is larger than either
+marginal, a separate spatial or temporal analysis would have missed the
+leak.</p>
 </div>
 <div class="section level2">
-<h2 id="trend-strength-extrapolation-risk">6. Trend strength (extrapolation risk)<a class="anchor" aria-label="anchor" href="#trend-strength-extrapolation-risk"></a>
+<h2 id="trend-strength-a-leak-the-sli-cannot-see">6. Trend strength (a leak the SLI cannot see)<a class="anchor" aria-label="anchor" href="#trend-strength-a-leak-the-sli-cannot-see"></a>
 </h2>
-<p>A large-scale trend that a trend-blind model cannot extrapolate is a
-leakage source the autocorrelation index does not see.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p>The meta-audit in the paper turned up a second source of optimism
+that <strong>no</strong> autocorrelation-based diagnostic (NNDM, the
+SLI, the de-leak) can detect: a large-scale <strong>trend</strong> a
+trend-blind model cannot extrapolate. Smooth fields like rainfall or
+elevation can be 40–54% optimistic yet show almost no short-range
+leakage. <code><a href="../reference/trend_strength.html">trend_strength()</a></code> flags this directly as the
+variance a quadratic coordinate surface explains.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trendy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">200</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">200</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">trendy</span><span class="op">$</span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fl">3</span> <span class="op">*</span> <span class="va">trendy</span><span class="op">$</span><span class="va">x</span> <span class="op">-</span> <span class="fl">2</span> <span class="op">*</span> <span class="va">trendy</span><span class="op">$</span><span class="va">y</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">0</span>, <span class="fl">.2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/trend_strength.html">trend_strength</a></span><span class="op">(</span><span class="va">trendy</span>, <span class="st">"z"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.9633468</span></span></code></pre></div>
-<p>All channels are summarised together by
-<code><a href="../reference/audit_workflow.html">audit_workflow()</a></code>.</p>
+<p>A value near 1 means the response is dominated by a smooth coordinate
+trend — treat extrapolation accuracy with suspicion regardless of what
+the SLI says.</p>
+</div>
+<div class="section level2">
+<h2 id="audit-every-channel-at-once">Audit every channel at once<a class="anchor" aria-label="anchor" href="#audit-every-channel-at-once"></a>
+</h2>
+<p><code><a href="../reference/audit_workflow.html">audit_workflow()</a></code> runs the geographic, grouped, trend and
+CRS checks together and prints a one-screen scorecard with
+<code>[ok]</code>/<code>[!]</code> flags — the quickest way to triage a
+new analysis.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/audit_workflow.html">audit_workflow</a></span><span class="op">(</span><span class="va">dd</span>, split <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">dd</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, target <span class="op">=</span> <span class="va">tgt</span>,</span>
+<span>               response <span class="op">=</span> <span class="st">"z"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;workflow_audit&gt;</span></span>
+<span><span class="co">#&gt;   leakage grade     : B  (SLI_rho = +0.095)</span></span>
+<span><span class="co">#&gt;   [ok] autocorrelation leakage (random-split optimism)</span></span>
+<span><span class="co">#&gt;   [!] trend strength: 0.95 (extrapolation-optimism risk a trend-blind model misses)</span></span>
+<span><span class="co">#&gt;   [!] duplicated coordinates: 60</span></span>
+<span><span class="co">#&gt;   [!] grouped/co-location leakage: 23.9% of test points</span></span>
+<span><span class="co">#&gt;   [!] CRS documented: FALSE</span></span></code></pre></div>
+<p>To turn detected leakage into a number (“how inflated is my
+accuracy?”) and to correct it, continue with
+<code><a href="../articles/quantify-correct.html">vignette("quantify-correct")</a></code>. ```</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
