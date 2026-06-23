@@ -15,9 +15,9 @@ early development; no functions are exported yet (phase P0).
 
 Useful links:
 
-- <https://github.com/olatunji-johnson/spLeakage>
+- <https://github.com/olatunjijohnson/spLeakage>
 
-- Report bugs at <https://github.com/olatunji-johnson/spLeakage/issues>
+- Report bugs at <https://github.com/olatunjijohnson/spLeakage/issues>
 
 ## Author
 

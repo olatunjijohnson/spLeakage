@@ -1,7 +1,9 @@
 # Audit a cross-validation workflow for spatial leakage
 
-Runs [`detect_leakage()`](detect_leakage.md) and adds data-hygiene
-checks (duplicated coordinates, documented CRS) to produce a scorecard.
+Runs
+[`detect_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_leakage.md)
+and adds data-hygiene checks (duplicated coordinates, documented CRS) to
+produce a scorecard.
 
 ## Usage
 
@@ -30,8 +32,9 @@ audit_workflow(
 
 - target:
 
-  A [`prediction_target()`](prediction_target.md) (or coordinates
-  coercible to one).
+  A
+  [`prediction_target()`](https://olatunjijohnson.github.io/spLeakage/reference/prediction_target.md)
+  (or coordinates coercible to one).
 
 - response:
 
@@ -40,8 +43,9 @@ audit_workflow(
 
 - dependence:
 
-  A precomputed [`estimate_dependence()`](estimate_dependence.md) object
-  (optional; overrides `response`). Carries any anisotropy used.
+  A precomputed
+  [`estimate_dependence()`](https://olatunjijohnson.github.io/spLeakage/reference/estimate_dependence.md)
+  object (optional; overrides `response`). Carries any anisotropy used.
 
 - coords:
 
@@ -50,8 +54,8 @@ audit_workflow(
 - group:
 
   Optional grouping column for
-  [`detect_group_leakage()`](detect_group_leakage.md) (defaults to
-  grouping by coordinates).
+  [`detect_group_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_group_leakage.md)
+  (defaults to grouping by coordinates).
 
 ## Value
 

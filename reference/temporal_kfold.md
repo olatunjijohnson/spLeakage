@@ -3,7 +3,9 @@
 Splits the data into `k` time-ordered blocks and builds folds where each
 block is tested using only earlier blocks for training – no future
 information leaks into training. Returns a list of folds usable directly
-by [`detect_leakage()`](detect_leakage.md) etc.
+by
+[`detect_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_leakage.md)
+etc.
 
 ## Usage
 

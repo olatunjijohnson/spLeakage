@@ -3,7 +3,8 @@
 The proportion of response variance explained by a low-order polynomial
 of the coordinates – a measure of large-scale spatial trend. High trend
 strength means a trend-blind model will extrapolate poorly, a leakage
-channel the autocorrelation [`detect_leakage()`](detect_leakage.md)
+channel the autocorrelation
+[`detect_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_leakage.md)
 index does not capture.
 
 ## Usage

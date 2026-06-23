@@ -125,4 +125,4 @@ trend_strength(trendy, "z", coords = c("x", "y"))
 ```
 
 All channels are summarised together by
-[`audit_workflow()`](../reference/audit_workflow.md).
+[`audit_workflow()`](https://olatunjijohnson.github.io/spLeakage/reference/audit_workflow.md).

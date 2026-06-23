@@ -65,9 +65,9 @@ deleak_estimate(d, folds, response = "z", coords = c("x", "y"),
 
 ## Fast emulator route
 
-[`predict_optimism()`](../reference/predict_optimism.md) uses a
-calibrated emulator (no refitting); it refuses queries outside its area
-of applicability.
+[`predict_optimism()`](https://olatunjijohnson.github.io/spLeakage/reference/predict_optimism.md)
+uses a calibrated emulator (no refitting); it refuses queries outside
+its area of applicability.
 
 ``` r
 
@@ -81,10 +81,10 @@ predict_optimism(d, folds, tgt, response = "z", coords = c("x", "y"), model = "i
 
 ## Recommend a validation scheme
 
-[`recommend_validation()`](../reference/recommend_validation.md) gives
-design-aware guidance;
-[`rank_cv_schemes()`](../reference/rank_cv_schemes.md) ranks candidate
-schemes by how well they match deployment.
+[`recommend_validation()`](https://olatunjijohnson.github.io/spLeakage/reference/recommend_validation.md)
+gives design-aware guidance;
+[`rank_cv_schemes()`](https://olatunjijohnson.github.io/spLeakage/reference/rank_cv_schemes.md)
+ranks candidate schemes by how well they match deployment.
 
 ``` r
 

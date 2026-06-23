@@ -18,21 +18,27 @@ report_leakage(
 
 - diagnosis:
 
-  A [`detect_leakage()`](detect_leakage.md) result.
+  A
+  [`detect_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_leakage.md)
+  result.
 
 - optimism:
 
-  An optional [`estimate_optimism()`](estimate_optimism.md) result.
+  An optional
+  [`estimate_optimism()`](https://olatunjijohnson.github.io/spLeakage/reference/estimate_optimism.md)
+  result.
 
 - recommendation:
 
-  An optional [`recommend_validation()`](recommend_validation.md)
+  An optional
+  [`recommend_validation()`](https://olatunjijohnson.github.io/spLeakage/reference/recommend_validation.md)
   result.
 
 - deleak:
 
-  An optional [`deleak_estimate()`](deleak_estimate.md) result (the
-  corrected accuracy).
+  An optional
+  [`deleak_estimate()`](https://olatunjijohnson.github.io/spLeakage/reference/deleak_estimate.md)
+  result (the corrected accuracy).
 
 ## Value
 
