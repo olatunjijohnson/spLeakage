@@ -3,8 +3,8 @@
 Flags test observations that share a group (e.g. the same site, repeated
 survey, household, or plot) with a training observation in the same fold
 – exact leakage that the distance-based
-[`detect_leakage()`](detect_leakage.md) index registers only at distance
-zero.
+[`detect_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_leakage.md)
+index registers only at distance zero.
 
 ## Usage
 
@@ -20,7 +20,8 @@ detect_group_leakage(data, split, group = NULL, coords = NULL, tol = 0)
 
 - split:
 
-  A split specification (see [`detect_leakage()`](detect_leakage.md)).
+  A split specification (see
+  [`detect_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_leakage.md)).
 
 - group:
 

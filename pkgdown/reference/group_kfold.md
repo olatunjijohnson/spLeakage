@@ -2,7 +2,8 @@
 
 Assigns whole groups to folds so that members of a group (e.g.
 co-located records) are never split across train and test. The remedy
-for the leakage that [`detect_group_leakage()`](detect_group_leakage.md)
+for the leakage that
+[`detect_group_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_group_leakage.md)
 flags.
 
 ## Usage

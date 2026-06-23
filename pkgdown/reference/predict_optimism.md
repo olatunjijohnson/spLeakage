@@ -2,10 +2,10 @@
 
 Estimates the optimism of a split using the pre-trained emulator and
 cheap data/split/target features – the fast counterpart to
-[`estimate_optimism()`](estimate_optimism.md). The estimate is
-conditioned on the model class and response type. If the query falls
-outside the emulator's area of applicability (in feature or category
-space) the function refuses a point estimate (`NA`) rather than
+[`estimate_optimism()`](https://olatunjijohnson.github.io/spLeakage/reference/estimate_optimism.md).
+The estimate is conditioned on the model class and response type. If the
+query falls outside the emulator's area of applicability (in feature or
+category space) the function refuses a point estimate (`NA`) rather than
 extrapolating.
 
 ## Usage
@@ -37,8 +37,9 @@ predict_optimism(
 
 - target:
 
-  A [`prediction_target()`](prediction_target.md) (or coordinates
-  coercible to one).
+  A
+  [`prediction_target()`](https://olatunjijohnson.github.io/spLeakage/reference/prediction_target.md)
+  (or coordinates coercible to one).
 
 - response:
 
@@ -57,8 +58,9 @@ predict_optimism(
 
 - dependence:
 
-  A precomputed [`estimate_dependence()`](estimate_dependence.md) object
-  (optional; overrides `response`). Carries any anisotropy used.
+  A precomputed
+  [`estimate_dependence()`](https://olatunjijohnson.github.io/spLeakage/reference/estimate_dependence.md)
+  object (optional; overrides `response`). Carries any anisotropy used.
 
 - coords:
 

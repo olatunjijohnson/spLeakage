@@ -46,7 +46,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/olatunji-johnson/spLeakage/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/olatunjijohnson/spLeakage/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -63,23 +63,28 @@
 <p><code>spLeakage</code> is a <em>diagnostic</em> R package. Given spatial data and a train/test split (or an existing modelling workflow), it:</p>
 <ul>
 <li>
-<strong>detects and scores</strong> how much a validation scheme leaks information through spatial autocorrelation (the <strong>Spatial Leakage Index</strong>),</li>
+<strong>detects</strong> leakage across seven channels — geographic autocorrelation (the signed <strong>Spatial Leakage Index</strong>), grouped/duplicated-location, feature-space, covariate-extraction-overlap, temporal, joint spatiotemporal, and large-scale trend;</li>
 <li>
-<strong>estimates the optimism</strong> that leakage induces in reported accuracy (<em>“your RMSE is likely ~14% optimistic”</em>), and</li>
+<strong>quantifies the optimism</strong> leakage induces (<em>“your accuracy is ~26% optimistic”</em>), with an empirical route and a fast calibrated <strong>emulator</strong> (adaptive intervals);</li>
 <li>
-<strong>recommends an appropriate validation strategy</strong> for your sampling design and prediction target — including when spatial cross-validation is <em>not</em> the right choice.</li>
+<strong>corrects it</strong> — a bias-corrected (“de-leaked”) accuracy estimate with a CI, which can even correct a published number without refitting;</li>
+<li>
+<strong>recommends</strong> an appropriate validation strategy (design-aware, including when spatial CV is <em>not</em> right) and <strong>ranks</strong> candidate schemes; and</li>
+<li>
+<strong>designs</strong> where to place a budget of independent validation points for the most precise estimate of true accuracy.</li>
 </ul>
-<p>It <strong>audits rather than generates</strong> folds, interoperating with established spatial cross-validation packages (CAST, blockCV, spatialsample, mlr3spatiotempcv) rather than competing with them.</p>
+<p>It <strong>audits rather than generates</strong> folds, interoperating with established spatial cross-validation packages (CAST, blockCV, spatialsample, mlr3spatiotempcv).</p>
+<p>Each leakage channel comes with a paired fix (<code>group_kfold</code>, <code>temporal_kfold</code>, target-matched controls), and proper scoring rules (Brier/log-loss/Poisson) make optimism meaningful for disease-prevalence and count responses.</p>
 <div class="section level2">
 <h2 id="status">Status<a class="anchor" aria-label="anchor" href="#status"></a>
 </h2>
-<p>In development (phase P2 — diagnostic, optimism, and recommendation engine implemented; <code>R CMD check</code> clean). See <a href="docs/VISION.html"><code>docs/VISION.md</code></a> for the methodology, full feature catalogue, and roadmap, <a href="docs/METHOD-SLI.html"><code>docs/METHOD-SLI.md</code></a> and <a href="docs/METHOD-EMULATOR.html"><code>docs/METHOD-EMULATOR.md</code></a> for the locked method specs, and <a href="docs/PAPER.html"><code>docs/PAPER.md</code></a> for the paper plan.</p>
+<p><code>R CMD check</code> clean (0/0/0). Tutorials: <strong>Getting started</strong>, <strong>Leakage channels beyond distance</strong>, and <strong>Quantify, correct, and design</strong> (see the package vignettes / website articles). The method is backed by a GP optimism <strong>theory</strong> (the SLI is a near- sufficient statistic for true optimism), a benchmark against NNDM, two real-data validations, and a 16-dataset meta-audit. See <a href="docs/VISION.html"><code>docs/VISION.md</code></a>, <a href="docs/THEORY.html"><code>docs/THEORY.md</code></a>, and <a href="docs/PAPER.html"><code>docs/PAPER.md</code></a>.</p>
 </div>
 <div class="section level2">
 <h2 id="quick-example">Quick example<a class="anchor" aria-label="anchor" href="#quick-example"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/olatunji-johnson/spLeakage" class="external-link">spLeakage</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/olatunjijohnson/spLeakage" class="external-link">spLeakage</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Declare where the model will actually be used (wall-to-wall map):</span></span>
 <span><span class="va">tgt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/prediction_target.html">prediction_target</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="va">pred_grid</span>, type <span class="op">=</span> <span class="st">"grid"</span><span class="op">)</span></span>
@@ -99,9 +104,36 @@
 <p>See the package vignette for a full worked example.</p>
 </div>
 <div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<p>Full reference and tutorials are on the package website: <strong><a href="https://olatunjijohnson.github.io/spLeakage/" class="uri">https://olatunjijohnson.github.io/spLeakage/</a></strong></p>
+<ul>
+<li>
+<strong>Get started</strong> — <code><a href="articles/spLeakage.html">vignette("spLeakage")</a></code>
+</li>
+<li>
+<strong>Leakage channels beyond distance</strong> — <code><a href="articles/channels.html">vignette("channels")</a></code>
+</li>
+<li>
+<strong>Quantify, correct, and design</strong> — <code><a href="articles/quantify-correct.html">vignette("quantify-correct")</a></code>
+</li>
+</ul>
+</div>
+<div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Not yet on CRAN. Install the development version locally with <code>devtools::install("spLeakage")</code>.</p>
+<p><code>spLeakage</code> is not yet on CRAN. Install the development version from GitHub:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"olatunjijohnson/spLeakage"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># to build the vignettes locally as well:</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"olatunjijohnson/spLeakage"</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>Or with <strong>pak</strong>:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu">pak</span><span class="op">(</span><span class="st">"olatunjijohnson/spLeakage"</span><span class="op">)</span></span></code></pre></div>
+<p>Some functionality is optional and guarded behind <code>Suggests</code> (e.g. <code>xgboost</code> for the emulator, <code>gstat</code> for variograms, <code>rsample</code>/<code>blockCV</code>/<code>mlr3</code> adaptors); install those as needed.</p>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
@@ -112,8 +144,8 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/olatunji-johnson/spLeakage/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/olatunji-johnson/spLeakage/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/olatunjijohnson/spLeakage/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/olatunjijohnson/spLeakage/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 

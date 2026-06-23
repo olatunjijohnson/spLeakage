@@ -51,11 +51,12 @@ deleak_estimate(
 
 - target:
 
-  Optional [`prediction_target()`](prediction_target.md). When supplied,
-  the controlled scheme is **target-matched** (the candidate scheme
-  whose `SLI_rho` against the target is closest to zero) instead of a
-  fixed spatial block – recommended when deployment is extrapolation,
-  where a fixed block under-corrects.
+  Optional
+  [`prediction_target()`](https://olatunjijohnson.github.io/spLeakage/reference/prediction_target.md).
+  When supplied, the controlled scheme is **target-matched** (the
+  candidate scheme whose `SLI_rho` against the target is closest to
+  zero) instead of a fixed spatial block – recommended when deployment
+  is extrapolation, where a fixed block under-corrects.
 
 - predict_fun:
 
@@ -84,8 +85,9 @@ deleak_estimate(
 
 - dependence:
 
-  Optional [`estimate_dependence()`](estimate_dependence.md) object
-  (used to set the buffer for `control = "buffer"`).
+  Optional
+  [`estimate_dependence()`](https://olatunjijohnson.github.io/spLeakage/reference/estimate_dependence.md)
+  object (used to set the buffer for `control = "buffer"`).
 
 - k_control:
 

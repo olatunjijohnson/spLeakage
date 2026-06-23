@@ -6,26 +6,43 @@
 `spLeakage` is a *diagnostic* R package. Given spatial data and a
 train/test split (or an existing modelling workflow), it:
 
-- **detects and scores** how much a validation scheme leaks information
-  through spatial autocorrelation (the **Spatial Leakage Index**),
-- **estimates the optimism** that leakage induces in reported accuracy
-  (*“your RMSE is likely ~14% optimistic”*), and
-- **recommends an appropriate validation strategy** for your sampling
-  design and prediction target — including when spatial cross-validation
-  is *not* the right choice.
+- **detects** leakage across seven channels — geographic autocorrelation
+  (the signed **Spatial Leakage Index**), grouped/duplicated-location,
+  feature-space, covariate-extraction-overlap, temporal, joint
+  spatiotemporal, and large-scale trend;
+- **quantifies the optimism** leakage induces (*“your accuracy is ~26%
+  optimistic”*), with an empirical route and a fast calibrated
+  **emulator** (adaptive intervals);
+- **corrects it** — a bias-corrected (“de-leaked”) accuracy estimate
+  with a CI, which can even correct a published number without
+  refitting;
+- **recommends** an appropriate validation strategy (design-aware,
+  including when spatial CV is *not* right) and **ranks** candidate
+  schemes; and
+- **designs** where to place a budget of independent validation points
+  for the most precise estimate of true accuracy.
 
 It **audits rather than generates** folds, interoperating with
 established spatial cross-validation packages (CAST, blockCV,
-spatialsample, mlr3spatiotempcv) rather than competing with them.
+spatialsample, mlr3spatiotempcv).
+
+Each leakage channel comes with a paired fix (`group_kfold`,
+`temporal_kfold`, target-matched controls), and proper scoring rules
+(Brier/log-loss/Poisson) make optimism meaningful for disease-prevalence
+and count responses.
 
 ## Status
 
-In development (phase P2 — diagnostic, optimism, and recommendation
-engine implemented; `R CMD check` clean). See
-[`docs/VISION.md`](docs/VISION.md) for the methodology, full feature
-catalogue, and roadmap, [`docs/METHOD-SLI.md`](docs/METHOD-SLI.md) and
-[`docs/METHOD-EMULATOR.md`](docs/METHOD-EMULATOR.md) for the locked
-method specs, and [`docs/PAPER.md`](docs/PAPER.md) for the paper plan.
+`R CMD check` clean (0/0/0). Tutorials: **Getting started**, **Leakage
+channels beyond distance**, and **Quantify, correct, and design** (see
+the package vignettes / website articles). The method is backed by a GP
+optimism **theory** (the SLI is a near- sufficient statistic for true
+optimism), a benchmark against NNDM, two real-data validations, and a
+16-dataset meta-audit. See
+[`docs/VISION.md`](https://olatunjijohnson.github.io/spLeakage/docs/VISION.md),
+[`docs/THEORY.md`](https://olatunjijohnson.github.io/spLeakage/docs/THEORY.md),
+and
+[`docs/PAPER.md`](https://olatunjijohnson.github.io/spLeakage/docs/PAPER.md).
 
 ## Quick example
 
@@ -52,10 +69,43 @@ recommend_validation(data, estimand = "prediction",
 
 See the package vignette for a full worked example.
 
+## Documentation
+
+Full reference and tutorials are on the package website:
+**<https://olatunjijohnson.github.io/spLeakage/>**
+
+- **Get started** —
+  [`vignette("spLeakage")`](https://olatunjijohnson.github.io/spLeakage/articles/spLeakage.md)
+- **Leakage channels beyond distance** —
+  [`vignette("channels")`](https://olatunjijohnson.github.io/spLeakage/articles/channels.md)
+- **Quantify, correct, and design** —
+  [`vignette("quantify-correct")`](https://olatunjijohnson.github.io/spLeakage/articles/quantify-correct.md)
+
 ## Installation
 
-Not yet on CRAN. Install the development version locally with
-`devtools::install("spLeakage")`.
+`spLeakage` is not yet on CRAN. Install the development version from
+GitHub:
+
+``` r
+
+# install.packages("remotes")
+remotes::install_github("olatunjijohnson/spLeakage")
+
+# to build the vignettes locally as well:
+remotes::install_github("olatunjijohnson/spLeakage", build_vignettes = TRUE)
+```
+
+Or with **pak**:
+
+``` r
+
+# install.packages("pak")
+pak::pak("olatunjijohnson/spLeakage")
+```
+
+Some functionality is optional and guarded behind `Suggests`
+(e.g. `xgboost` for the emulator, `gstat` for variograms,
+`rsample`/`blockCV`/`mlr3` adaptors); install those as needed.
 
 ## License
 
@@ -65,84 +115,92 @@ MIT © Olatunji Johnson
 
 ## Overview
 
-- [`spLeakage`](spLeakage-package.md)
-  [`spLeakage-package`](spLeakage-package.md) : spLeakage: Detect and
-  Quantify Spatial Information Leakage
+- [`spLeakage`](https://olatunjijohnson.github.io/spLeakage/reference/spLeakage-package.md)
+  [`spLeakage-package`](https://olatunjijohnson.github.io/spLeakage/reference/spLeakage-package.md)
+  : spLeakage: Detect and Quantify Spatial Information Leakage
 
 ## Diagnose leakage
 
 Detect and quantify spatial information leakage in a split.
 
-- [`detect_leakage()`](detect_leakage.md) : Detect and quantify spatial
-  leakage in a train/test split
-- [`sli()`](sli.md) : Extract the Spatial Leakage Index
-- [`plot(`*`<leakage_diagnosis>`*`)`](plot.leakage_diagnosis.md) : Plot
-  a leakage diagnosis
-- [`estimate_dependence()`](estimate_dependence.md) : Estimate spatial
-  dependence (variogram, range, correlation, anisotropy)
-- [`prediction_target()`](prediction_target.md) : Declare the prediction
-  target (deployment geometry)
+- [`detect_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_leakage.md)
+  : Detect and quantify spatial leakage in a train/test split
+- [`sli()`](https://olatunjijohnson.github.io/spLeakage/reference/sli.md)
+  : Extract the Spatial Leakage Index
+- [`plot(`*`<leakage_diagnosis>`*`)`](https://olatunjijohnson.github.io/spLeakage/reference/plot.leakage_diagnosis.md)
+  : Plot a leakage diagnosis
+- [`estimate_dependence()`](https://olatunjijohnson.github.io/spLeakage/reference/estimate_dependence.md)
+  : Estimate spatial dependence (variogram, range, correlation,
+  anisotropy)
+- [`prediction_target()`](https://olatunjijohnson.github.io/spLeakage/reference/prediction_target.md)
+  : Declare the prediction target (deployment geometry)
 
 ## Quantify optimism
 
 How inflated is the reported accuracy?
 
-- [`estimate_optimism()`](estimate_optimism.md) : Estimate the optimism
-  (accuracy inflation) of a cross-validation scheme
-- [`predict_optimism()`](predict_optimism.md) : Predict optimism from
-  the calibrated emulator (fast, no model refitting)
-- [`deleak_estimate()`](deleak_estimate.md) : De-leaked (bias-corrected)
-  accuracy estimate
+- [`estimate_optimism()`](https://olatunjijohnson.github.io/spLeakage/reference/estimate_optimism.md)
+  : Estimate the optimism (accuracy inflation) of a cross-validation
+  scheme
+- [`predict_optimism()`](https://olatunjijohnson.github.io/spLeakage/reference/predict_optimism.md)
+  : Predict optimism from the calibrated emulator (fast, no model
+  refitting)
+- [`deleak_estimate()`](https://olatunjijohnson.github.io/spLeakage/reference/deleak_estimate.md)
+  : De-leaked (bias-corrected) accuracy estimate
 
 ## Recommend & report
 
-- [`recommend_validation()`](recommend_validation.md) : Recommend a
-  validation strategy for a sampling design and prediction target
-- [`rank_cv_schemes()`](rank_cv_schemes.md) : Rank candidate
-  cross-validation schemes by deployment match
-- [`audit_workflow()`](audit_workflow.md) : Audit a cross-validation
-  workflow for spatial leakage
-- [`report_leakage()`](report_leakage.md) : Assemble a leakage report
-  (scorecard)
+- [`recommend_validation()`](https://olatunjijohnson.github.io/spLeakage/reference/recommend_validation.md)
+  : Recommend a validation strategy for a sampling design and prediction
+  target
+- [`rank_cv_schemes()`](https://olatunjijohnson.github.io/spLeakage/reference/rank_cv_schemes.md)
+  : Rank candidate cross-validation schemes by deployment match
+- [`audit_workflow()`](https://olatunjijohnson.github.io/spLeakage/reference/audit_workflow.md)
+  : Audit a cross-validation workflow for spatial leakage
+- [`report_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/report_leakage.md)
+  : Assemble a leakage report (scorecard)
 
 ## Multi-channel leakage
 
 Grouped/duplicated-location, feature-space, and temporal leakage.
 
-- [`detect_group_leakage()`](detect_group_leakage.md) : Detect grouped /
-  duplicated-location leakage in a split
-- [`group_kfold()`](group_kfold.md) : Group-aware k-fold assignment (the
-  fix for grouped leakage)
-- [`detect_feature_leakage()`](detect_feature_leakage.md) : Detect
-  feature-space (covariate) leakage
-- [`detect_extraction_leakage()`](detect_extraction_leakage.md) : Detect
-  covariate-extraction-overlap leakage
-- [`detect_temporal_leakage()`](detect_temporal_leakage.md) : Detect
-  temporal (lookahead) leakage in a split
-- [`temporal_kfold()`](temporal_kfold.md) : Forward-chaining temporal
-  cross-validation (the fix for lookahead leakage)
-- [`detect_st_leakage()`](detect_st_leakage.md) : Detect joint
-  spatiotemporal leakage
-- [`trend_strength()`](trend_strength.md) : Trend strength: large-scale
-  structure that resists extrapolation
+- [`detect_group_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_group_leakage.md)
+  : Detect grouped / duplicated-location leakage in a split
+- [`group_kfold()`](https://olatunjijohnson.github.io/spLeakage/reference/group_kfold.md)
+  : Group-aware k-fold assignment (the fix for grouped leakage)
+- [`detect_feature_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_feature_leakage.md)
+  : Detect feature-space (covariate) leakage
+- [`detect_extraction_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_extraction_leakage.md)
+  : Detect covariate-extraction-overlap leakage
+- [`detect_temporal_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_temporal_leakage.md)
+  : Detect temporal (lookahead) leakage in a split
+- [`temporal_kfold()`](https://olatunjijohnson.github.io/spLeakage/reference/temporal_kfold.md)
+  : Forward-chaining temporal cross-validation (the fix for lookahead
+  leakage)
+- [`detect_st_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_st_leakage.md)
+  : Detect joint spatiotemporal leakage
+- [`trend_strength()`](https://olatunjijohnson.github.io/spLeakage/reference/trend_strength.md)
+  : Trend strength: large-scale structure that resists extrapolation
 
 ## Validation design
 
 Where to place independent validation points to estimate true accuracy.
 
-- [`design_validation()`](design_validation.md) : Design an optimal
-  independent validation sample
+- [`design_validation()`](https://olatunjijohnson.github.io/spLeakage/reference/design_validation.md)
+  : Design an optimal independent validation sample
 
 ## Cross-validation schemes
 
-- [`spatial_block_cv()`](spatial_block_cv.md) : Spatial block
-  cross-validation folds
+- [`spatial_block_cv()`](https://olatunjijohnson.github.io/spLeakage/reference/spatial_block_cv.md)
+  : Spatial block cross-validation folds
 
 # Articles
 
 ### All vignettes
 
-- [Leakage channels beyond distance](channels.md):
-- [Quantify, correct, and design](quantify-correct.md):
+- [Leakage channels beyond
+  distance](https://olatunjijohnson.github.io/spLeakage/articles/channels.md):
+- [Quantify, correct, and
+  design](https://olatunjijohnson.github.io/spLeakage/articles/quantify-correct.md):
 - [Detecting and quantifying spatial leakage with
-  spLeakage](spLeakage.md):
+  spLeakage](https://olatunjijohnson.github.io/spLeakage/articles/spLeakage.md):

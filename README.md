@@ -57,10 +57,37 @@ recommend_validation(data, estimand = "prediction",
 
 See the package vignette for a full worked example.
 
+## Documentation
+
+Full reference and tutorials are on the package website:
+**<https://olatunjijohnson.github.io/spLeakage/>**
+
+- **Get started** — `vignette("spLeakage")`
+- **Leakage channels beyond distance** — `vignette("channels")`
+- **Quantify, correct, and design** — `vignette("quantify-correct")`
+
 ## Installation
 
-Not yet on CRAN. Install the development version locally with
-`devtools::install("spLeakage")`.
+`spLeakage` is not yet on CRAN. Install the development version from GitHub:
+
+```r
+# install.packages("remotes")
+remotes::install_github("olatunjijohnson/spLeakage")
+
+# to build the vignettes locally as well:
+remotes::install_github("olatunjijohnson/spLeakage", build_vignettes = TRUE)
+```
+
+Or with **pak**:
+
+```r
+# install.packages("pak")
+pak::pak("olatunjijohnson/spLeakage")
+```
+
+Some functionality is optional and guarded behind `Suggests` (e.g. `xgboost` for the
+emulator, `gstat` for variograms, `rsample`/`blockCV`/`mlr3` adaptors); install those
+as needed.
 
 ## License
 

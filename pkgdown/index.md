@@ -6,26 +6,43 @@
 `spLeakage` is a *diagnostic* R package. Given spatial data and a
 train/test split (or an existing modelling workflow), it:
 
-- **detects and scores** how much a validation scheme leaks information
-  through spatial autocorrelation (the **Spatial Leakage Index**),
-- **estimates the optimism** that leakage induces in reported accuracy
-  (*“your RMSE is likely ~14% optimistic”*), and
-- **recommends an appropriate validation strategy** for your sampling
-  design and prediction target — including when spatial cross-validation
-  is *not* the right choice.
+- **detects** leakage across seven channels — geographic autocorrelation
+  (the signed **Spatial Leakage Index**), grouped/duplicated-location,
+  feature-space, covariate-extraction-overlap, temporal, joint
+  spatiotemporal, and large-scale trend;
+- **quantifies the optimism** leakage induces (*“your accuracy is ~26%
+  optimistic”*), with an empirical route and a fast calibrated
+  **emulator** (adaptive intervals);
+- **corrects it** — a bias-corrected (“de-leaked”) accuracy estimate
+  with a CI, which can even correct a published number without
+  refitting;
+- **recommends** an appropriate validation strategy (design-aware,
+  including when spatial CV is *not* right) and **ranks** candidate
+  schemes; and
+- **designs** where to place a budget of independent validation points
+  for the most precise estimate of true accuracy.
 
 It **audits rather than generates** folds, interoperating with
 established spatial cross-validation packages (CAST, blockCV,
-spatialsample, mlr3spatiotempcv) rather than competing with them.
+spatialsample, mlr3spatiotempcv).
+
+Each leakage channel comes with a paired fix (`group_kfold`,
+`temporal_kfold`, target-matched controls), and proper scoring rules
+(Brier/log-loss/Poisson) make optimism meaningful for disease-prevalence
+and count responses.
 
 ## Status
 
-In development (phase P2 — diagnostic, optimism, and recommendation
-engine implemented; `R CMD check` clean). See
-[`docs/VISION.md`](docs/VISION.md) for the methodology, full feature
-catalogue, and roadmap, [`docs/METHOD-SLI.md`](docs/METHOD-SLI.md) and
-[`docs/METHOD-EMULATOR.md`](docs/METHOD-EMULATOR.md) for the locked
-method specs, and [`docs/PAPER.md`](docs/PAPER.md) for the paper plan.
+`R CMD check` clean (0/0/0). Tutorials: **Getting started**, **Leakage
+channels beyond distance**, and **Quantify, correct, and design** (see
+the package vignettes / website articles). The method is backed by a GP
+optimism **theory** (the SLI is a near- sufficient statistic for true
+optimism), a benchmark against NNDM, two real-data validations, and a
+16-dataset meta-audit. See
+[`docs/VISION.md`](https://olatunjijohnson.github.io/spLeakage/docs/VISION.md),
+[`docs/THEORY.md`](https://olatunjijohnson.github.io/spLeakage/docs/THEORY.md),
+and
+[`docs/PAPER.md`](https://olatunjijohnson.github.io/spLeakage/docs/PAPER.md).
 
 ## Quick example
 
@@ -52,10 +69,43 @@ recommend_validation(data, estimand = "prediction",
 
 See the package vignette for a full worked example.
 
+## Documentation
+
+Full reference and tutorials are on the package website:
+**<https://olatunjijohnson.github.io/spLeakage/>**
+
+- **Get started** —
+  [`vignette("spLeakage")`](https://olatunjijohnson.github.io/spLeakage/articles/spLeakage.md)
+- **Leakage channels beyond distance** —
+  [`vignette("channels")`](https://olatunjijohnson.github.io/spLeakage/articles/channels.md)
+- **Quantify, correct, and design** —
+  [`vignette("quantify-correct")`](https://olatunjijohnson.github.io/spLeakage/articles/quantify-correct.md)
+
 ## Installation
 
-Not yet on CRAN. Install the development version locally with
-`devtools::install("spLeakage")`.
+`spLeakage` is not yet on CRAN. Install the development version from
+GitHub:
+
+``` r
+
+# install.packages("remotes")
+remotes::install_github("olatunjijohnson/spLeakage")
+
+# to build the vignettes locally as well:
+remotes::install_github("olatunjijohnson/spLeakage", build_vignettes = TRUE)
+```
+
+Or with **pak**:
+
+``` r
+
+# install.packages("pak")
+pak::pak("olatunjijohnson/spLeakage")
+```
+
+Some functionality is optional and guarded behind `Suggests`
+(e.g. `xgboost` for the emulator, `gstat` for variograms,
+`rsample`/`blockCV`/`mlr3` adaptors); install those as needed.
 
 ## License
 

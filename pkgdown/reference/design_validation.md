@@ -31,8 +31,9 @@ design_validation(
 
 - target:
 
-  A [`prediction_target()`](prediction_target.md) (the deployment
-  region).
+  A
+  [`prediction_target()`](https://olatunjijohnson.github.io/spLeakage/reference/prediction_target.md)
+  (the deployment region).
 
 - budget:
 
@@ -61,7 +62,9 @@ design_validation(
 
 - dependence:
 
-  Optional [`estimate_dependence()`](estimate_dependence.md) object.
+  Optional
+  [`estimate_dependence()`](https://olatunjijohnson.github.io/spLeakage/reference/estimate_dependence.md)
+  object.
 
 - seed:
 

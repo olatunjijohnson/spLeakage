@@ -28,7 +28,8 @@ detect_st_leakage(
 
 - split:
 
-  A split specification (see [`detect_leakage()`](detect_leakage.md)).
+  A split specification (see
+  [`detect_leakage()`](https://olatunjijohnson.github.io/spLeakage/reference/detect_leakage.md)).
 
 - time:
 

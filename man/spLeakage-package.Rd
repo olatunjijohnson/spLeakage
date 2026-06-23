@@ -18,8 +18,8 @@ development; no functions are exported yet (phase P0).
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/olatunji-johnson/spLeakage}
-  \item Report bugs at \url{https://github.com/olatunji-johnson/spLeakage/issues}
+  \item \url{https://github.com/olatunjijohnson/spLeakage}
+  \item Report bugs at \url{https://github.com/olatunjijohnson/spLeakage/issues}
 }
 
 }

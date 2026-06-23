@@ -28,8 +28,9 @@ rank_cv_schemes(
 
 - target:
 
-  A [`prediction_target()`](prediction_target.md) (or coordinates
-  coercible to one).
+  A
+  [`prediction_target()`](https://olatunjijohnson.github.io/spLeakage/reference/prediction_target.md)
+  (or coordinates coercible to one).
 
 - response:
 
@@ -49,7 +50,8 @@ rank_cv_schemes(
 
 - dependence:
 
-  Optional precomputed [`estimate_dependence()`](estimate_dependence.md)
+  Optional precomputed
+  [`estimate_dependence()`](https://olatunjijohnson.github.io/spLeakage/reference/estimate_dependence.md)
   object.
 
 - seed:

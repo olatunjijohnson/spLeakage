@@ -7,9 +7,9 @@ split, a prediction target, and the data, it answers three questions:
 1.  **Is there leakage, and how much?** — the signed Spatial Leakage
     Index (`SLI`).
 2.  **So how inflated are my numbers?** —
-    [`estimate_optimism()`](../reference/estimate_optimism.md).
+    [`estimate_optimism()`](https://olatunjijohnson.github.io/spLeakage/reference/estimate_optimism.md).
 3.  **What should I have done?** —
-    [`recommend_validation()`](../reference/recommend_validation.md).
+    [`recommend_validation()`](https://olatunjijohnson.github.io/spLeakage/reference/recommend_validation.md).
 
 The guiding idea: *leakage and optimism are only well-posed relative to
 a declared sampling design, estimand, and prediction target.*

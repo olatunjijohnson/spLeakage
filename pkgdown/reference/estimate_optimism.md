@@ -65,8 +65,9 @@ estimate_optimism(
 
 - dependence:
 
-  Optional [`estimate_dependence()`](estimate_dependence.md) object
-  (used to set the buffer for `control = "buffer"`).
+  Optional
+  [`estimate_dependence()`](https://olatunjijohnson.github.io/spLeakage/reference/estimate_dependence.md)
+  object (used to set the buffer for `control = "buffer"`).
 
 - k_control:
 

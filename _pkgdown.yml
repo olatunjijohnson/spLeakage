@@ -1,4 +1,4 @@
-url: ~
+url: https://olatunjijohnson.github.io/spLeakage/
 
 # Write to pkgdown/ so the planning docs/ folder is never clobbered.
 destination: pkgdown

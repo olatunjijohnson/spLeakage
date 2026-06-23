@@ -2,7 +2,9 @@
 
 ### All vignettes
 
-- [Leakage channels beyond distance](channels.md):
-- [Quantify, correct, and design](quantify-correct.md):
+- [Leakage channels beyond
+  distance](https://olatunjijohnson.github.io/spLeakage/articles/channels.md):
+- [Quantify, correct, and
+  design](https://olatunjijohnson.github.io/spLeakage/articles/quantify-correct.md):
 - [Detecting and quantifying spatial leakage with
-  spLeakage](spLeakage.md):
+  spLeakage](https://olatunjijohnson.github.io/spLeakage/articles/spLeakage.md):

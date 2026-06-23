@@ -35,8 +35,9 @@ detect_leakage(
 
 - target:
 
-  A [`prediction_target()`](prediction_target.md) (or coordinates
-  coercible to one).
+  A
+  [`prediction_target()`](https://olatunjijohnson.github.io/spLeakage/reference/prediction_target.md)
+  (or coordinates coercible to one).
 
 - response:
 
@@ -45,8 +46,9 @@ detect_leakage(
 
 - dependence:
 
-  A precomputed [`estimate_dependence()`](estimate_dependence.md) object
-  (optional; overrides `response`). Carries any anisotropy used.
+  A precomputed
+  [`estimate_dependence()`](https://olatunjijohnson.github.io/spLeakage/reference/estimate_dependence.md)
+  object (optional; overrides `response`). Carries any anisotropy used.
 
 - coords:
 
