@@ -2,7 +2,7 @@ Package: spLeakage
 Title: Detect and Quantify Spatial Information Leakage in Predictive Modelling
 Version: 0.1.0
 Authors@R:
-    person("Olatunji", "Johnson", email = "teejaystatistics@gmail.com",
+    person("Olatunji", "Johnson", email = "olatunjijohnson21111@gmail.com",
            role = c("aut", "cre"))
 Description: Diagnostic tools for spatial information leakage in predictive
     modelling. Given spatial data and a train/test split (or an existing

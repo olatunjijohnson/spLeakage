@@ -24,7 +24,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Olatunji Johnson \email{teejaystatistics@gmail.com}
+\strong{Maintainer}: Olatunji Johnson \email{olatunjijohnson21111@gmail.com}
 
 }
 \keyword{internal}

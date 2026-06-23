@@ -67,10 +67,29 @@
 
     
     
-<p>Detecting leakage is the first step. <code>spLeakage</code> also
-quantifies the <em>consequence</em> (how inflated your accuracy is),
-corrects it, recommends a better scheme, and designs where to collect
-independent validation data.</p>
+<div class="section level2">
+<h2 id="from-is-it-leaking-to-what-do-i-do-about-it">From “is it leaking?” to “what do I do about it?”<a class="anchor" aria-label="anchor" href="#from-is-it-leaking-to-what-do-i-do-about-it"></a>
+</h2>
+<p>Detecting leakage is only the first step. Once you know a split
+leaks, four practical questions follow, and <code>spLeakage</code>
+answers each:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>How inflated is my reported accuracy?</strong> →
+<code><a href="../reference/estimate_optimism.html">estimate_optimism()</a></code> (refit) and
+<code><a href="../reference/predict_optimism.html">predict_optimism()</a></code> (fast emulator).</li>
+<li>
+<strong>What number should I report instead?</strong> →
+<code><a href="../reference/deleak_estimate.html">deleak_estimate()</a></code> — a corrected accuracy with a confidence
+interval, even for a <em>published</em> result.</li>
+<li>
+<strong>Which validation scheme should I have used?</strong> →
+<code><a href="../reference/rank_cv_schemes.html">rank_cv_schemes()</a></code>.</li>
+<li>
+<strong>Where should I collect independent validation data?</strong>
+→ <code><a href="../reference/design_validation.html">design_validation()</a></code>.</li>
+</ol>
+<p>We reuse the clustered example throughout.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">nc</span> <span class="op">&lt;-</span> <span class="fl">8</span>; <span class="va">ce</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">nc</span>, <span class="fl">.1</span>, <span class="fl">.9</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">nc</span>, <span class="fl">.1</span>, <span class="fl">.9</span><span class="op">)</span><span class="op">)</span>; <span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">nc</span>, <span class="fl">400</span>, <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -80,11 +99,13 @@ independent validation data.</p>
 <span><span class="va">folds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fl">400</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">.07</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">.07</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">tgt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prediction_target.html">prediction_target</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="va">grid</span>, type <span class="op">=</span> <span class="st">"grid"</span><span class="op">)</span></span></code></pre></div>
+</div>
 <div class="section level2">
-<h2 id="quantify-the-optimism">Quantify the optimism<a class="anchor" aria-label="anchor" href="#quantify-the-optimism"></a>
+<h2 id="quantify-the-optimism-the-refit-route">1. Quantify the optimism (the refit route)<a class="anchor" aria-label="anchor" href="#quantify-the-optimism-the-refit-route"></a>
 </h2>
-<p>How much is the reported accuracy inflated, relative to a
-leakage-controlled scheme?</p>
+<p><code><a href="../reference/estimate_optimism.html">estimate_optimism()</a></code> re-evaluates the model under a
+leakage-controlled, design-matched scheme and reports the gap to your
+reported (random-CV) error.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/estimate_optimism.html">estimate_optimism</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">folds</span>, response <span class="op">=</span> <span class="st">"z"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;optimism_estimate&gt;</span></span>
@@ -92,8 +113,19 @@ leakage-controlled scheme?</p>
 <span><span class="co">#&gt;   user CV error     : 0.2119</span></span>
 <span><span class="co">#&gt;   controlled error  : 0.7568</span></span>
 <span><span class="co">#&gt;   optimism          : +0.5449  (+72.0% of controlled)  [OPTIMISTIC (reported accuracy inflated)]</span></span></code></pre></div>
-<p>For binary (disease-prevalence) or count responses, use a proper
-scoring rule:</p>
+<p>The <code>optimism</code> line is the headline: it gives the absolute
+gap <em>and</em> the percentage inflation of your accuracy. A large
+positive percentage means the random split made the model look that much
+better than the design-matched scheme says it is. (For a true
+probability sample this number can be negative — pessimism — and is
+reported as such.)</p>
+<div class="section level3">
+<h3 id="proper-scoring-rules-for-non-gaussian-responses">Proper scoring rules for non-Gaussian responses<a class="anchor" aria-label="anchor" href="#proper-scoring-rules-for-non-gaussian-responses"></a>
+</h3>
+<p>For prevalence (binary) or count responses, RMSE is not the right
+metric. Pass a proper scoring rule so the optimism is meaningful —
+<code>brier</code>/<code>logloss</code> for binary, <code>poisson</code>
+for counts:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">db</span> <span class="op">&lt;-</span> <span class="va">d</span>; <span class="va">db</span><span class="op">$</span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">400</span>, <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">plogis</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">pi</span> <span class="op">*</span> <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/estimate_optimism.html">estimate_optimism</a></span><span class="op">(</span><span class="va">db</span>, <span class="va">folds</span>, response <span class="op">=</span> <span class="st">"z"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span>, metric <span class="op">=</span> <span class="st">"brier"</span><span class="op">)</span></span>
@@ -103,13 +135,44 @@ scoring rule:</p>
 <span><span class="co">#&gt;   controlled error  : 0.1901</span></span>
 <span><span class="co">#&gt;   optimism          : +0.0103  (+5.4% of controlled)  [OPTIMISTIC (reported accuracy inflated)]</span></span></code></pre></div>
 </div>
+</div>
 <div class="section level2">
-<h2 id="correct-it-the-de-leaked-estimate">Correct it: the de-leaked estimate<a class="anchor" aria-label="anchor" href="#correct-it-the-de-leaked-estimate"></a>
+<h2 id="quantify-the-optimism-the-fast-emulator-route">2. Quantify the optimism (the fast emulator route)<a class="anchor" aria-label="anchor" href="#quantify-the-optimism-the-fast-emulator-route"></a>
 </h2>
-<p>The de-leaked estimate is the accuracy you should report, with a
-confidence interval. It can even correct a <em>published</em> number
-without refitting.</p>
+<p>The refit route needs to re-run the model.
+<code><a href="../reference/predict_optimism.html">predict_optimism()</a></code> instead uses an emulator
+<strong>pre-calibrated on a large simulation study</strong> and shipped
+with the package, returning an estimate (with a 90% interval) in
+milliseconds and <em>without</em> refitting.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/predict_optimism.html">predict_optimism</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">folds</span>, <span class="va">tgt</span>, response <span class="op">=</span> <span class="st">"z"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span>, model <span class="op">=</span> <span class="st">"idw"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Query is outside the emulator's area of applicability; refusing a</span></span>
+<span><span class="co">#&gt; point estimate. Use estimate_optimism() instead.</span></span>
+<span><span class="co">#&gt; &lt;optimism_prediction&gt; (emulator)</span></span>
+<span><span class="co">#&gt;   model / response : idw / gaussian  [match: model+response]</span></span>
+<span><span class="co">#&gt;   optimism         : NA  [outside AOA: DI 0.54 &gt; 0.38]</span></span></code></pre></div>
+<p>Two things to note. First, when the query is in range the emulator
+returns a point estimate with a genuine (conformal) predictive interval,
+not a point guess. Second — and this is deliberate — the emulator
+carries its <strong>own</strong> area-of-applicability guard. In fact
+this small, tightly clustered example falls <em>outside</em> the
+envelope the emulator was trained on, so it prints
+<code>optimism: NA [outside AOA: DI ... &gt; ...]</code> and
+<strong>refuses to answer</strong> rather than extrapolate. A leakage
+tool must not commit the sin it polices. When the emulator abstains like
+this, fall back to the refit route in section 1
+(<code><a href="../reference/estimate_optimism.html">estimate_optimism()</a></code>), which always applies.</p>
+</div>
+<div class="section level2">
+<h2 id="correct-it-the-de-leaked-estimate">3. Correct it: the de-leaked estimate<a class="anchor" aria-label="anchor" href="#correct-it-the-de-leaked-estimate"></a>
+</h2>
+<p><code><a href="../reference/deleak_estimate.html">deleak_estimate()</a></code> is the number you should actually
+report: a bias-corrected (“de-leaked”) accuracy with a bootstrap
+confidence interval. Pass your reported metric value via
+<code>reported=</code> and it will also translate <em>that specific
+number</em> into its corrected counterpart — so you can correct a
+published result without the original model or refitting.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/deleak_estimate.html">deleak_estimate</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">folds</span>, response <span class="op">=</span> <span class="st">"z"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span>,</span>
 <span>                reported <span class="op">=</span> <span class="fl">0.30</span>, n_boot <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;deleak_estimate&gt;</span></span>
@@ -118,26 +181,25 @@ without refitting.</p>
 <span><span class="co">#&gt;   de-leaked estimate   : 0.7497   (90% CI 0.4034, 1.033)</span></span>
 <span><span class="co">#&gt;   =&gt; reported accuracy inflated by +72% (error x3.54)</span></span>
 <span><span class="co">#&gt;   your reported 0.3 -&gt; de-leaked 1.062 (90% CI 0.5523, 1.472)</span></span></code></pre></div>
+<ul>
+<li>
+<code>de-leaked estimate</code> (with CI) is the corrected
+accuracy.</li>
+<li>The <code>inflated by ...%</code> line restates the optimism as a
+multiplier on your error.</li>
+<li>The final line maps your supplied <code>reported</code> 0.30 to its
+de-leaked value.</li>
+</ul>
+<p>For extrapolation deployments, pass <code>target=</code> so the
+correction uses a <strong>target-matched</strong> control (the paper
+shows this recovers ~89% of the true independent error, versus ~58% with
+a fixed block control).</p>
 </div>
 <div class="section level2">
-<h2 id="fast-emulator-route">Fast emulator route<a class="anchor" aria-label="anchor" href="#fast-emulator-route"></a>
+<h2 id="recommend-and-rank-validation-schemes">4. Recommend and rank validation schemes<a class="anchor" aria-label="anchor" href="#recommend-and-rank-validation-schemes"></a>
 </h2>
-<p><code><a href="../reference/predict_optimism.html">predict_optimism()</a></code> uses a calibrated emulator (no
-refitting); it refuses queries outside its area of applicability.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/predict_optimism.html">predict_optimism</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">folds</span>, <span class="va">tgt</span>, response <span class="op">=</span> <span class="st">"z"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span>, model <span class="op">=</span> <span class="st">"idw"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Query is outside the emulator's area of applicability; refusing a</span></span>
-<span><span class="co">#&gt; point estimate. Use estimate_optimism() instead.</span></span>
-<span><span class="co">#&gt; &lt;optimism_prediction&gt; (emulator)</span></span>
-<span><span class="co">#&gt;   model / response : idw / gaussian  [match: model+response]</span></span>
-<span><span class="co">#&gt;   optimism         : NA  [outside AOA: DI 0.54 &gt; 0.38]</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="recommend-a-validation-scheme">Recommend a validation scheme<a class="anchor" aria-label="anchor" href="#recommend-a-validation-scheme"></a>
-</h2>
-<p><code><a href="../reference/recommend_validation.html">recommend_validation()</a></code> gives design-aware guidance;
-<code><a href="../reference/rank_cv_schemes.html">rank_cv_schemes()</a></code> ranks candidate schemes by how well they
-match deployment.</p>
+<p><code><a href="../reference/recommend_validation.html">recommend_validation()</a></code> gives design-aware guidance
+(recall: the design is <em>declared</em>, never inferred):</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/recommend_validation.html">recommend_validation</a></span><span class="op">(</span>estimand <span class="op">=</span> <span class="st">"prediction"</span>, design <span class="op">=</span> <span class="st">"clustered"</span>, target <span class="op">=</span> <span class="st">"grid"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;validation_recommendation&gt;</span></span>
@@ -147,21 +209,37 @@ match deployment.</p>
 <span><span class="co">#&gt;     - NNDM / kNNDM CV</span></span>
 <span><span class="co">#&gt;     - Spatial block CV</span></span>
 <span><span class="co">#&gt;   avoid: Random k-fold CV (optimistic under spatial autocorrelation)</span></span>
-<span><span class="co">#&gt;   rationale: Conditional predictive skill from a clustered sample for a 'grid' target: match the CV geometry to deployment (NNDM/kNNDM/buffered) so test points are as far from training as prediction points are from the sample.</span></span>
-<span><span class="fu"><a href="../reference/rank_cv_schemes.html">rank_cv_schemes</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">tgt</span>, response <span class="op">=</span> <span class="st">"z"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   rationale: Conditional predictive skill from a clustered sample for a 'grid' target: match the CV geometry to deployment (NNDM/kNNDM/buffered) so test points are as far from training as prediction points are from the sample.</span></span></code></pre></div>
+<p>Where <code><a href="../reference/recommend_validation.html">recommend_validation()</a></code> gives expert guidance,
+<code><a href="../reference/rank_cv_schemes.html">rank_cv_schemes()</a></code> makes it <strong>data-driven</strong>: it
+builds each candidate scheme on <em>your</em> data and ranks them by how
+closely each one’s geometry matches your declared deployment target
+(smallest <code>|SLI_rho|</code> wins).</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rank_cv_schemes.html">rank_cv_schemes</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">tgt</span>, response <span class="op">=</span> <span class="st">"z"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;scheme_ranking&gt;  target = 'grid'</span></span>
 <span><span class="co">#&gt;   ranked by deployment match (|SLI_rho| -&gt; 0 is best):</span></span>
 <span><span class="co">#&gt;     * block     SLI_rho +0.018  W 0.0254  [well matched]</span></span>
 <span><span class="co">#&gt;       random    SLI_rho +0.093  W 0.0933  [OPTIMISTIC leakage]</span></span>
 <span><span class="co">#&gt;       buffered  SLI_rho -0.197  W 0.222  [PESSIMISTIC (anti-leakage)]</span></span>
 <span><span class="co">#&gt;   recommended: block</span></span></code></pre></div>
+<p>The <code>*</code> marks the recommended scheme. On clustered data
+you will typically see random CV flagged optimistic, buffered CV
+<em>over-corrected into pessimism</em>, and block CV closest to
+deployment — a nuance a static lookup table cannot provide.</p>
 </div>
 <div class="section level2">
-<h2 id="design-where-to-validate">Design where to validate<a class="anchor" aria-label="anchor" href="#design-where-to-validate"></a>
+<h2 id="design-where-to-collect-validation-data">5. Design where to collect validation data<a class="anchor" aria-label="anchor" href="#design-where-to-collect-validation-data"></a>
 </h2>
-<p>Given a budget of independent validation points, where should they go
-to estimate true accuracy most precisely?</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p>The honest way to know your true map accuracy is to measure it on
+<strong>independent</strong> points. Given a budget, where should those
+points go? <code><a href="../reference/design_validation.html">design_validation()</a></code> inverts the leakage logic:
+it stratifies space by distance-to-training (on the deployment
+distribution), models the per-stratum error from the spatial theory, and
+allocates the budget by Neyman allocation with inclusion weights, so the
+resulting weighted-mean accuracy estimate is both unbiased and
+minimum-variance.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/design_validation.html">design_validation</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">tgt</span>, budget <span class="op">=</span> <span class="fl">25</span>, response <span class="op">=</span> <span class="st">"z"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;validation_design&gt;  budget = 25, allocation = optimal, placed = 24</span></span>
 <span><span class="co">#&gt;   estimate true accuracy as a weighted mean of validation errors (weights returned)</span></span>
@@ -174,6 +252,22 @@ to estimate true accuracy most precisely?</p>
 <span><span class="co">#&gt;   0.164      0.213 4</span></span>
 <span><span class="co">#&gt;   0.164      0.306 6</span></span>
 <span><span class="co">#&gt;   0.169      0.427 9</span></span></code></pre></div>
+<p>The <code>SE ... lower than simple random validation</code> line
+quantifies the saving: in the paper’s experiments the optimal design
+reaches the same precision from a budget of 30 points that random
+placement needs far more to match. The returned strata table (deployment
+weight × mean error × points placed) shows where the budget went and the
+inclusion weights to use when averaging the validation errors.</p>
+</div>
+<div class="section level2">
+<h2 id="recap">Recap<a class="anchor" aria-label="anchor" href="#recap"></a>
+</h2>
+<p><code>spLeakage</code> takes you from a single leakage score to a
+defensible, corrected accuracy estimate and a plan for collecting the
+data that would confirm it. Combined with the multi-channel detectors in
+<code><a href="../articles/channels.html">vignette("channels")</a></code> and the conceptual framing in
+<code><a href="../articles/spLeakage.html">vignette("spLeakage")</a></code>, that is the full diagnostic
+workflow. ```</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

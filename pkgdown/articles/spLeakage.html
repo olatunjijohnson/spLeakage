@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Detecting and quantifying spatial leakage with spLeakage • spLeakage</title>
+<title>Getting started: detecting and quantifying spatial leakage • spLeakage</title>
 <script src="../deps/jquery-3.6.1/jquery-3.6.1.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Detecting and quantifying spatial leakage with spLeakage">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting started: detecting and quantifying spatial leakage">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -58,7 +58,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Detecting and quantifying spatial leakage with spLeakage</h1>
+      <h1>Getting started: detecting and quantifying spatial leakage</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/olatunjijohnson/spLeakage/blob/HEAD/vignettes/spLeakage.Rmd" class="external-link"><code>vignettes/spLeakage.Rmd</code></a></small>
@@ -67,45 +67,93 @@
 
     
     
-<p><code>spLeakage</code> <strong>audits</strong> a train/test split: it
-does not generate folds (that space is covered by <code>CAST</code>,
-<code>blockCV</code>, <code>spatialsample</code>). Given a split, a
-prediction target, and the data, it answers three questions:</p>
+<div class="section level2">
+<h2 id="the-problem-in-one-paragraph">The problem in one paragraph<a class="anchor" aria-label="anchor" href="#the-problem-in-one-paragraph"></a>
+</h2>
+<p>When you validate a spatial model with an ordinary
+<strong>random</strong> train/test split, nearby points tend to land in
+<em>both</em> the training and the test set. Because spatial data are
+autocorrelated (close locations have similar values), each test point
+usually has a training neighbour just a short distance away. Your model
+is therefore graded on a task close to <strong>interpolation</strong> —
+even though, at deployment, it must predict at locations that are often
+<em>far</em> from any training data. The reported error comes out too
+low: it is <strong>optimistically biased</strong>. This is <em>spatial
+information leakage</em>, and it is why headline accuracy numbers for
+maps are routinely over-confident.</p>
+</div>
+<div class="section level2">
+<h2 id="what-spleakage-does-and-does-not-do">What <code>spLeakage</code> does (and does not) do<a class="anchor" aria-label="anchor" href="#what-spleakage-does-and-does-not-do"></a>
+</h2>
+<p>A mature ecosystem already <em>generates</em> leakage-resistant folds
+(<code>CAST</code>, <code>blockCV</code>, <code>spatialsample</code>,
+<code>mlr3spatiotempcv</code>). <code>spLeakage</code> does something
+different: it <strong>audits a split you already have</strong> (or a
+published result) and answers three questions.</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong>Is there leakage, and how much?</strong> — the signed
-Spatial Leakage Index (<code>SLI</code>).</li>
+<strong>Is there leakage, and how much?</strong> →
+<code><a href="../reference/detect_leakage.html">detect_leakage()</a></code> returns the signed Spatial Leakage Index
+(SLI).</li>
 <li>
-<strong>So how inflated are my numbers?</strong> —
-<code><a href="../reference/estimate_optimism.html">estimate_optimism()</a></code>.</li>
+<strong>So how inflated are my numbers?</strong> →
+<code><a href="../reference/estimate_optimism.html">estimate_optimism()</a></code> / <code><a href="../reference/predict_optimism.html">predict_optimism()</a></code> turn
+leakage into a percentage inflation of your accuracy.</li>
 <li>
-<strong>What should I have done?</strong> —
-<code><a href="../reference/recommend_validation.html">recommend_validation()</a></code>.</li>
+<strong>What should I have done instead?</strong> →
+<code><a href="../reference/recommend_validation.html">recommend_validation()</a></code> gives design-aware advice (including
+<em>when spatial CV is the wrong choice</em>).</li>
 </ol>
-<p>The guiding idea: <em>leakage and optimism are only well-posed
-relative to a declared sampling design, estimand, and prediction
-target.</em></p>
+<p>The single idea that ties these together:</p>
+<blockquote>
+<p><strong>Leakage and optimism are only well-posed relative to a
+declared sampling design, estimand, and prediction target.</strong> The
+same split can be leaking, correct, or pessimistic depending on those
+three declarations.</p>
+</blockquote>
+<p>So before measuring anything, you tell <code>spLeakage</code>
+<em>where the model will actually be used</em> (the prediction target).
+Everything is measured against that.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/olatunjijohnson/spLeakage" class="external-link">spLeakage</a></span><span class="op">)</span></span></code></pre></div>
+</div>
 <div class="section level2">
-<h2 id="a-clustered-sample-the-canonical-leakage-regime">A clustered sample (the canonical leakage regime)<a class="anchor" aria-label="anchor" href="#a-clustered-sample-the-canonical-leakage-regime"></a>
+<h2 id="a-worked-example-a-clustered-survey">A worked example: a clustered survey<a class="anchor" aria-label="anchor" href="#a-worked-example-a-clustered-survey"></a>
 </h2>
+<p>Real ecological, soil and disease-mapping samples are rarely a neat
+grid; they are <strong>clustered</strong> — surveys concentrate where it
+is convenient or interesting to sample. Clustering is the canonical
+leakage regime, so we simulate it: eight cluster centres with points
+scattered tightly around each.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
-<span><span class="va">nc</span> <span class="op">&lt;-</span> <span class="fl">8</span></span>
+<span><span class="va">nc</span> <span class="op">&lt;-</span> <span class="fl">8</span>                                            <span class="co"># number of clusters</span></span>
 <span><span class="va">centers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">nc</span>, <span class="fl">0.1</span>, <span class="fl">0.9</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">nc</span>, <span class="fl">0.1</span>, <span class="fl">0.9</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">nc</span>, <span class="fl">500</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">xy</span> <span class="op">&lt;-</span> <span class="va">centers</span><span class="op">[</span><span class="va">cl</span>, <span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">500</span>, <span class="fl">0</span>, <span class="fl">0.04</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">500</span>, <span class="fl">0</span>, <span class="fl">0.04</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="va">xy</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="va">xy</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">d</span><span class="op">$</span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">pi</span> <span class="op">*</span> <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">cos</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">pi</span> <span class="op">*</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">500</span>, <span class="fl">0</span>, <span class="fl">0.15</span><span class="op">)</span></span></code></pre></div>
-<p>We will map wall-to-wall over the unit square:</p>
+<span><span class="va">d</span><span class="op">$</span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">pi</span> <span class="op">*</span> <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">cos</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">pi</span> <span class="op">*</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">500</span>, <span class="fl">0</span>, <span class="fl">0.15</span><span class="op">)</span>  <span class="co"># smooth spatial signal</span></span></code></pre></div>
+<p>The model is intended to produce a <strong>wall-to-wall map</strong>
+over the whole unit square, not just to predict near the surveyed
+clusters. We declare that deployment target explicitly — it is what the
+leakage will be measured against:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.975</span>, length.out <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
-<span><span class="va">tgt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prediction_target.html">prediction_target</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">s</span>, y <span class="op">=</span> <span class="va">s</span><span class="op">)</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"grid"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">tgt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prediction_target.html">prediction_target</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">s</span>, y <span class="op">=</span> <span class="va">s</span><span class="op">)</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"grid"</span><span class="op">)</span></span>
+<span><span class="va">tgt</span></span>
+<span><span class="co">#&gt; &lt;prediction_target&gt; type = 'grid'</span></span>
+<span><span class="co">#&gt;   prediction points : 400</span></span>
+<span><span class="co">#&gt;   geographic CRS    : FALSE</span></span></code></pre></div>
+<p><code><a href="../reference/prediction_target.html">prediction_target()</a></code> builds the set of locations the
+model is deployed on. Use <code>type = "grid"</code> for wall-to-wall
+mapping, <code>type = "newdata"</code> for a specific set of prediction
+points, or <code>type = "interpolation"</code> for prediction
+<em>within</em> the sampled footprint.</p>
 </div>
 <div class="section level2">
-<h2 id="detect-leakage-in-a-random-8020-style-10-fold-split">1. Detect leakage in a random 80/20-style 10-fold split<a class="anchor" aria-label="anchor" href="#detect-leakage-in-a-random-8020-style-10-fold-split"></a>
+<h2 id="step-1-detect-leakage">Step 1 — Detect leakage<a class="anchor" aria-label="anchor" href="#step-1-detect-leakage"></a>
 </h2>
+<p>We grade a naive random 10-fold split against that target:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">folds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">lk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detect_leakage.html">detect_leakage</a></span><span class="op">(</span><span class="va">d</span>, split <span class="op">=</span> <span class="va">folds</span>, target <span class="op">=</span> <span class="va">tgt</span>, response <span class="op">=</span> <span class="st">"z"</span>,</span>
@@ -116,17 +164,100 @@ target.</em></p>
 <span><span class="co">#&gt;   SLI_rho (signed)  : +0.138   [OPTIMISTIC leakage]  90% CI [+0.106, +0.185]</span></span>
 <span><span class="co">#&gt;   SLI_d  (signed)   : +0.053   (A = +0.1539, phi = 2.883)  90% CI [+0.040, +0.076]</span></span>
 <span><span class="co">#&gt;   retained corr.    : c_obs = 0.990 vs c_pred = 0.852</span></span>
+<span><span class="co">#&gt;   W (NNDM) / delta  : 0.1539 / +1.00</span></span></code></pre></div>
+<p><strong>How to read this output.</strong></p>
+<ul>
+<li>
+<code>SLI_rho (signed)</code> is the headline index. It is the
+difference in <em>retained spatial correlation</em> between
+cross-validation and deployment, on a
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">[</mo><mi>−</mi><mn>1</mn><mo>,</mo><mn>1</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[-1, 1]</annotation></semantics></math>
+scale:
+<ul>
+<li>
+<strong>positive → optimistic leakage</strong> (CV is easier than
+deployment; your error is too low),</li>
+<li>
+<strong>near zero → well matched</strong> (CV imitates
+deployment),</li>
+<li>
+<strong>negative → pessimistic</strong> (CV is <em>harder</em> than
+deployment; your error is too high — the Wadoux regime). The
+<code>90% CI</code> comes from the <code>n_boot</code> Monte-Carlo draws
+over variogram uncertainty. If the interval excludes zero, the leakage
+verdict is statistically resolved.</li>
+</ul>
+</li>
+<li>
+<code>retained corr.</code> shows the two ingredients:
+<code>c_obs</code> is how much spatial correlation CV keeps to the
+training data, <code>c_pred</code> how much is available at deployment.
+<code>SLI_rho = c_obs - c_pred</code>. Here CV “sees” much more nearby
+signal than deployment will.</li>
+<li>
+<code>SLI_d (signed)</code> is the distance-form companion:
+<code>A</code> is literally how much <em>farther</em> deployment reaches
+than CV pretended (in coordinate units), normalised by the variogram
+range <code>phi</code>.</li>
+<li>
+<code>W (NNDM) / delta</code>: <code>W</code> is exactly the
+(unsigned) NNDM/kNNDM Wasserstein statistic, included for comparability.
+<code>delta</code> is the directionality ratio: near
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>+</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">+1</annotation></semantics></math>
+means pure optimism, near
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">-1</annotation></semantics></math>
+pure pessimism, near
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0</mn><annotation encoding="application/x-tex">0</annotation></semantics></math>
+the ECDFs cross (mixed) — in which case you should look at the plot
+rather than trust a single number.</li>
+</ul>
+<div class="section level3">
+<h3 id="see-it-and-see-where-it-leaks">See it, and see <em>where</em> it leaks<a class="anchor" aria-label="anchor" href="#see-it-and-see-where-it-leaks"></a>
+</h3>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lk</span><span class="op">)</span>                       <span class="co"># observed (CV) vs target (deployment) NN-distance ECDFs</span></span></code></pre></div>
+<p><img src="spLeakage_files/figure-html/plot-ecdf-1.png" class="r-plt" alt="Observed vs target nearest-neighbour distance ECDFs" width="576"></p>
+<p>The red curve (test→train distances during CV) sits to the
+<strong>left</strong> of the blue curve (deployment→sample distances):
+CV test points are systematically closer to their training data than
+deployment points will be. That gap <em>is</em> the leakage.</p>
+<p>A per-fold breakdown, and a map of which points leak most, are one
+call away:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">lk</span><span class="op">)</span>                    <span class="co"># per-fold leakage contributions</span></span>
+<span><span class="co">#&gt; &lt;leakage_diagnosis&gt;</span></span>
+<span><span class="co">#&gt;   target            : grid   |  n = 500, test = 500, folds = 10</span></span>
+<span><span class="co">#&gt;   SLI_rho (signed)  : +0.138   [OPTIMISTIC leakage]  90% CI [+0.106, +0.185]</span></span>
+<span><span class="co">#&gt;   SLI_d  (signed)   : +0.053   (A = +0.1539, phi = 2.883)  90% CI [+0.040, +0.076]</span></span>
+<span><span class="co">#&gt;   retained corr.    : c_obs = 0.990 vs c_pred = 0.852</span></span>
 <span><span class="co">#&gt;   W (NNDM) / delta  : 0.1539 / +1.00</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lk</span><span class="op">)</span>          <span class="co"># observed (CV) vs target (deployment) NN-distance ECDFs</span></span></code></pre></div>
-<p><img src="spLeakage_files/figure-html/detect-1.png" class="r-plt" alt="" width="576"></p>
-<p>A positive <code>SLI_rho</code> whose interval excludes zero means
-the split is optimistically leaking.
-<code>plot(lk, which = "map")</code> shows <em>where</em>.</p>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   per-fold leakage (mean rho excess):</span></span>
+<span><span class="co">#&gt;     fold 1   : +0.140</span></span>
+<span><span class="co">#&gt;     fold 2   : +0.136</span></span>
+<span><span class="co">#&gt;     fold 3   : +0.139</span></span>
+<span><span class="co">#&gt;     fold 4   : +0.136</span></span>
+<span><span class="co">#&gt;     fold 5   : +0.137</span></span>
+<span><span class="co">#&gt;     fold 6   : +0.139</span></span>
+<span><span class="co">#&gt;     fold 7   : +0.138</span></span>
+<span><span class="co">#&gt;     fold 8   : +0.136</span></span>
+<span><span class="co">#&gt;     fold 9   : +0.140</span></span>
+<span><span class="co">#&gt;     fold 10  : +0.139</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lk</span>, which <span class="op">=</span> <span class="st">"map"</span><span class="op">)</span>        <span class="co"># red points contribute most leakage</span></span></code></pre></div>
+<p><img src="spLeakage_files/figure-html/plot-map-1.png" class="r-plt" alt="Per-point leakage contribution in space" width="576"></p>
+<p>This per-point/per-fold decomposition of an <em>arbitrary</em> split
+is something a fold-generator cannot give you.</p>
+</div>
 </div>
 <div class="section level2">
-<h2 id="quantify-the-optimism">2. Quantify the optimism<a class="anchor" aria-label="anchor" href="#quantify-the-optimism"></a>
+<h2 id="step-2-quantify-the-optimism">Step 2 — Quantify the optimism<a class="anchor" aria-label="anchor" href="#step-2-quantify-the-optimism"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>A leakage score is abstract; practitioners want the consequence in
+their own currency. <code><a href="../reference/estimate_optimism.html">estimate_optimism()</a></code> re-evaluates the
+model under a leakage-controlled, design-matched scheme (here spatial
+block CV) and reports the gap.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_optimism.html">estimate_optimism</a></span><span class="op">(</span><span class="va">d</span>, split <span class="op">=</span> <span class="va">folds</span>, response <span class="op">=</span> <span class="st">"z"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span>,</span>
 <span>                         control <span class="op">=</span> <span class="st">"block"</span><span class="op">)</span></span>
 <span><span class="va">opt</span></span>
@@ -135,16 +266,31 @@ the split is optimistically leaking.
 <span><span class="co">#&gt;   user CV error     : 0.1965</span></span>
 <span><span class="co">#&gt;   controlled error  : 0.4364</span></span>
 <span><span class="co">#&gt;   optimism          : +0.2399  (+55.0% of controlled)  [OPTIMISTIC (reported accuracy inflated)]</span></span></code></pre></div>
-<p>The reported (random-CV) error is compared against a
-leakage-controlled, design-matched scheme. The gap is the optimism —
-here a large positive inflation.</p>
+<ul>
+<li>
+<code>user CV error</code> is what your random split reported.</li>
+<li>
+<code>controlled error</code> is the (larger) error under the
+design-matched scheme.</li>
+<li>
+<code>optimism</code> is the difference, expressed as a percentage
+of the controlled error. A positive value means your reported accuracy
+is inflated by that much.</li>
+</ul>
+<p>Optimism can legitimately be <strong>negative</strong> for a genuine
+probability sample — that is <em>pessimism</em>, and the tool reports it
+as such rather than hiding it.</p>
 </div>
 <div class="section level2">
-<h2 id="get-a-design-aware-recommendation">3. Get a design-aware recommendation<a class="anchor" aria-label="anchor" href="#get-a-design-aware-recommendation"></a>
+<h2 id="step-3-get-a-design-aware-recommendation">Step 3 — Get a design-aware recommendation<a class="anchor" aria-label="anchor" href="#step-3-get-a-design-aware-recommendation"></a>
 </h2>
-<p>Declare the estimand and design (the design <em>cannot</em> be
-inferred from coordinates):</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>What should you have done? The answer depends on facts the
+coordinates cannot reveal — chiefly, the <strong>sampling
+design</strong>. A <em>designed</em> cluster sample and a
+<em>convenience</em> cluster sample can have identical point patterns
+but require different validation. So <code>spLeakage</code> asks you to
+<strong>declare</strong> the design; it never infers it.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/recommend_validation.html">recommend_validation</a></span><span class="op">(</span><span class="va">d</span>, estimand <span class="op">=</span> <span class="st">"prediction"</span>, design <span class="op">=</span> <span class="st">"clustered"</span>,</span>
 <span>                     target <span class="op">=</span> <span class="st">"grid"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;validation_recommendation&gt;</span></span>
@@ -156,22 +302,34 @@ inferred from coordinates):</p>
 <span><span class="co">#&gt;   avoid: Random k-fold CV (optimistic under spatial autocorrelation)</span></span>
 <span><span class="co">#&gt;   clustering flag (risk only): NN index = 0.71 (clustered)</span></span>
 <span><span class="co">#&gt;   rationale: Conditional predictive skill from a clustered sample for a 'grid' target: match the CV geometry to deployment (NNDM/kNNDM/buffered) so test points are as far from training as prediction points are from the sample.</span></span></code></pre></div>
-<p>For a <strong>probability sample</strong> the advice flips — random
-CV becomes correct and spatial CV is over-pessimistic:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/recommend_validation.html">recommend_validation</a></span><span class="op">(</span>estimand <span class="op">=</span> <span class="st">"prediction"</span>, design <span class="op">=</span> <span class="st">"probability"</span>, target <span class="op">=</span> <span class="st">"grid"</span><span class="op">)</span></span>
+<p>Read the <code>recommended</code> schemes and the <code>avoid</code>
+line; the <code>clustering flag</code> is shown as a <strong>risk
+indicator only</strong>, not as a basis for the recommendation.</p>
+<p>Now watch the advice <strong>flip</strong> when the very same data
+are declared to be a probability sample with a population-mean estimand
+— the case Wadoux et al. make, where random validation is
+design-unbiased and spatial CV is over-pessimistic:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/recommend_validation.html">recommend_validation</a></span><span class="op">(</span>estimand <span class="op">=</span> <span class="st">"population"</span>, design <span class="op">=</span> <span class="st">"probability"</span>, target <span class="op">=</span> <span class="st">"grid"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;validation_recommendation&gt;</span></span>
-<span><span class="co">#&gt;   estimand / design / target : prediction / probability / grid</span></span>
+<span><span class="co">#&gt;   estimand / design / target : population / probability / grid</span></span>
 <span><span class="co">#&gt;   spatial CV appropriate     : NO</span></span>
 <span><span class="co">#&gt;   recommended:</span></span>
-<span><span class="co">#&gt;     - Random CV (unbiased for a probability sample)</span></span>
-<span><span class="co">#&gt;   avoid: Forcing spatial CV (over-pessimistic here)</span></span>
-<span><span class="co">#&gt;   rationale: For a probability sample, random CV gives unbiased predictive skill; spatial CV would be pessimistic.</span></span></code></pre></div>
+<span><span class="co">#&gt;     - Design-based estimator (inclusion-weighted)</span></span>
+<span><span class="co">#&gt;     - Random CV</span></span>
+<span><span class="co">#&gt;   avoid: Spatial CV (introduces pessimistic bias for probability samples)</span></span>
+<span><span class="co">#&gt;   rationale: Population-mean map accuracy from a probability sample is unbiased under design-based inference; spatial CV is not appropriate here (Wadoux et al. 2021).</span></span></code></pre></div>
+<p>This is the reconciliation in action: neither “always use spatial CV”
+nor “never use spatial CV” is correct — the right answer is a function
+of your declarations.</p>
 </div>
 <div class="section level2">
-<h2 id="put-it-together-a-scorecard">Put it together: a scorecard<a class="anchor" aria-label="anchor" href="#put-it-together-a-scorecard"></a>
+<h2 id="put-it-together-a-submission-ready-scorecard">Put it together: a submission-ready scorecard<a class="anchor" aria-label="anchor" href="#put-it-together-a-submission-ready-scorecard"></a>
 </h2>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<p><code><a href="../reference/report_leakage.html">report_leakage()</a></code> assembles the diagnosis, the optimism,
+and the recommendation into one object you can drop into a methods
+appendix.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rec</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/recommend_validation.html">recommend_validation</a></span><span class="op">(</span><span class="va">d</span>, estimand <span class="op">=</span> <span class="st">"prediction"</span>, design <span class="op">=</span> <span class="st">"clustered"</span>,</span>
 <span>                            target <span class="op">=</span> <span class="st">"grid"</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/report_leakage.html">report_leakage</a></span><span class="op">(</span><span class="va">lk</span>, optimism <span class="op">=</span> <span class="va">opt</span>, recommendation <span class="op">=</span> <span class="va">rec</span><span class="op">)</span></span>
@@ -201,6 +359,21 @@ CV becomes correct and spatial CV is over-pessimistic:</p>
 <span><span class="co">#&gt;   clustering flag (risk only): NN index = 0.71 (clustered)</span></span>
 <span><span class="co">#&gt;   rationale: Conditional predictive skill from a clustered sample for a 'grid' target: match the CV geometry to deployment (NNDM/kNNDM/buffered) so test points are as far from training as prediction points are from the sample.</span></span>
 <span><span class="co">#&gt; ==================================================</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="where-to-next">Where to next<a class="anchor" aria-label="anchor" href="#where-to-next"></a>
+</h2>
+<ul>
+<li>
+<strong>Leakage channels beyond distance</strong> —
+grouped/duplicated locations, covariate space, time, and large-scale
+trend: <code><a href="../articles/channels.html">vignette("channels")</a></code>.</li>
+<li>
+<strong>Quantify, correct, and design</strong> — the fast emulator,
+the de-leaked estimate that corrects a published number, scheme ranking,
+and optimal validation-survey design:
+<code><a href="../articles/quantify-correct.html">vignette("quantify-correct")</a></code>. ```</li>
+</ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

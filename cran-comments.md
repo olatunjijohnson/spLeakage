@@ -4,7 +4,7 @@
 
 * checking CRAN incoming feasibility ... NOTE
 
-      Maintainer: 'Olatunji Johnson <teejaystatistics@gmail.com>'
+      Maintainer: 'Olatunji Johnson <olatunjijohnson21111@gmail.com>'
       New submission
 
   This is the expected "New submission" note for a first CRAN release; there are no
