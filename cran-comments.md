@@ -1,8 +1,16 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 0 notes
+0 errors | 0 warnings | 1 note
 
-* This is a new submission (development version).
+* checking CRAN incoming feasibility ... NOTE
+
+      Maintainer: 'Olatunji Johnson <teejaystatistics@gmail.com>'
+      New submission
+
+  This is the expected "New submission" note for a first CRAN release; there are no
+  other notes. The package URL and BugReports
+  (https://github.com/olatunjijohnson/spLeakage) and the documentation website
+  (https://olatunjijohnson.github.io/spLeakage/) are live and resolve.
 
 ## Test environment
 
