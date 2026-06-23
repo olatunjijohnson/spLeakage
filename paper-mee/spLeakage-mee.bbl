@@ -1,0 +1,101 @@
+\begin{thebibliography}{}
+
+\bibitem[Ara{\'u}jo et~al., 2019]{araujo2019standards}
+Ara{\'u}jo, M.~B., Anderson, R.~P., Barbosa, A.~M., et~al. (2019).
+\newblock Standards for distribution models in biodiversity assessments.
+\newblock {\em Science Advances}, 5(1):eaat4858.
+
+\bibitem[de~Bruin et~al., 2022]{debruin2022clustered}
+de~Bruin, S., Brus, D.~J., Heuvelink, G. B.~M., van Ebbenhorst~Tengbergen, T.,
+  and Wadoux, A. M. J.-C. (2022).
+\newblock Dealing with clustered samples for assessing map accuracy by
+  cross-validation.
+\newblock {\em Ecological Informatics}, 69:101665.
+
+\bibitem[Kattenborn et~al., 2022]{kattenborn2022spatially}
+Kattenborn, T., Schiefer, F., Frey, J., Feilhauer, H., Mahecha, M.~D., and
+  Dormann, C.~F. (2022).
+\newblock Spatially autocorrelated training and validation samples inflate
+  performance assessment of convolutional neural networks.
+\newblock {\em ISPRS Open Journal of Photogrammetry and Remote Sensing},
+  5:100018.
+
+\bibitem[Le~Rest et~al., 2014]{lerest2014sloo}
+Le~Rest, K., Pinaud, D., Monestiez, P., Chadoeuf, J., and Bretagnolle, V.
+  (2014).
+\newblock Spatial leave-one-out cross-validation for variable selection in the
+  presence of spatial autocorrelation.
+\newblock {\em Global Ecology and Biogeography}, 23(7):811--820.
+
+\bibitem[Linnenbrink et~al., 2024]{linnenbrink2024knndm}
+Linnenbrink, J., Mil{\`a}, C., Ludwig, M., and Meyer, H. (2024).
+\newblock knndm cv: k-fold nearest-neighbour distance matching cross-validation
+  for map accuracy estimation.
+\newblock {\em Geoscientific Model Development}, 17(15):5897--5912.
+
+\bibitem[Meyer et~al., 2024]{meyer2024cast}
+Meyer, H., Mil{\`a}, C., Ludwig, M., Linnenbrink, J., and Schumacher, F.
+  (2024).
+\newblock The {CAST} package for training and assessment of spatial prediction
+  models in {R}.
+\newblock {\em arXiv preprint arXiv:2404.06978}.
+
+\bibitem[Meyer and Pebesma, 2021]{meyer2021aoa}
+Meyer, H. and Pebesma, E. (2021).
+\newblock Predicting into unknown space? estimating the area of applicability
+  of spatial prediction models.
+\newblock {\em Methods in Ecology and Evolution}, 12(9):1620--1633.
+
+\bibitem[Mil{\`a} et~al., 2022]{mila2022nndm}
+Mil{\`a}, C., Mateu, J., Pebesma, E., and Meyer, H. (2022).
+\newblock Nearest neighbour distance matching leave-one-out cross-validation
+  for map validation.
+\newblock {\em Methods in Ecology and Evolution}, 13(6):1304--1316.
+
+\bibitem[Pebesma, 2018]{pebesma2018sf}
+Pebesma, E. (2018).
+\newblock Simple features for r: Standardized support for spatial vector data.
+\newblock {\em The R Journal}, 10(1):439--446.
+
+\bibitem[Ploton et~al., 2020]{ploton2020spatial}
+Ploton, P., Mortier, F., R{\'e}jou-M{\'e}chain, M., et~al. (2020).
+\newblock Spatial validation reveals poor predictive performance of large-scale
+  ecological mapping models.
+\newblock {\em Nature Communications}, 11:4540.
+
+\bibitem[Roberts et~al., 2017]{roberts2017crossvalidation}
+Roberts, D.~R., Bahn, V., Ciuti, S., et~al. (2017).
+\newblock Cross-validation strategies for data with temporal, spatial,
+  hierarchical, or phylogenetic structure.
+\newblock {\em Ecography}, 40(8):913--929.
+
+\bibitem[Telford and Birks, 2009]{telford2009evaluation}
+Telford, R.~J. and Birks, H. J.~B. (2009).
+\newblock Evaluation of transfer functions in spatially structured
+  environments.
+\newblock {\em Quaternary Science Reviews}, 28(13--14):1309--1316.
+
+\bibitem[Valavi et~al., 2019]{valavi2019blockcv}
+Valavi, R., Elith, J., Lahoz-Monfort, J.~J., and Guillera-Arroita, G. (2019).
+\newblock blockcv: An r package for generating spatially or environmentally
+  separated folds for k-fold cross-validation of species distribution models.
+\newblock {\em Methods in Ecology and Evolution}, 10(2):225--232.
+
+\bibitem[Wadoux et~al., 2021]{wadoux2021spatial}
+Wadoux, A. M. J.-C., Heuvelink, G. B.~M., de~Bruin, S., and Brus, D.~J. (2021).
+\newblock Spatial cross-validation is not the right way to evaluate map
+  accuracy.
+\newblock {\em Ecological Modelling}, 457:109692.
+
+\bibitem[Weiss et~al., 2019]{weiss2019mapping}
+Weiss, D.~J. et~al. (2019).
+\newblock Mapping the global prevalence, incidence, and mortality of plasmodium
+  falciparum, 2000--17.
+\newblock {\em The Lancet}, 394(10195):322--331.
+
+\bibitem[Zurell et~al., 2020]{zurell2020odmap}
+Zurell, D., Franklin, J., K{\"o}nig, C., et~al. (2020).
+\newblock A standard protocol for reporting species distribution models.
+\newblock {\em Ecography}, 43(9):1261--1277.
+
+\end{thebibliography}
