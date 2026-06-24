@@ -1,0 +1,101 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[a4paper,top=2cm,bottom=2cm,left=2.4cm,right=2.4cm]{geometry}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage[hidelinks]{hyperref}
+\usepackage{parskip}
+\pagestyle{empty}
+
+\newcommand{\mstitle}{Auditing spatial information leakage in ecological prediction:
+quantifying the optimism in map accuracy with the \texttt{spLeakage} R~package}
+
+\begin{document}
+
+\begin{center}
+{\large\bfseries Submission metadata}\\[2pt]
+\emph{Methods in Ecology and Evolution}\\[6pt]
+\textbf{Manuscript:} \mstitle\\
+\textbf{Author:} Olatunji Johnson (University of Manchester)
+\end{center}
+
+\hrule
+\bigskip
+
+% ===========================================================================
+\section*{Impact statement}
+
+\textbf{Short version} (\textasciitilde30 words, for a tight character limit):
+
+\begin{quote}
+Ecological maps routinely report accuracy that is too optimistic because nearby
+survey points leak information between training and testing. We provide a free tool to
+detect, quantify and correct this overconfidence in any analysis or published map.
+\end{quote}
+
+\textbf{Extended version} (\textasciitilde80 words, if a longer field is available):
+
+\begin{quote}
+Maps of where species occur, how much carbon a forest stores, or where disease risk
+is highest are only as trustworthy as their reported accuracy---yet that accuracy is
+routinely overstated, because spatially close survey points leak information between
+training and test data. This paper introduces an open-source R package that takes any
+existing analysis, or even a published map, and reports how inflated its accuracy is,
+where the leakage lies, and how to correct it---showing across 16 real datasets that
+reported accuracy is optimistic every time.
+\end{quote}
+
+% ===========================================================================
+\section*{Suggested reviewers}
+
+The following researchers have directly relevant expertise in spatial
+cross-validation, map-accuracy assessment and species distribution modelling. They are
+chosen to span both perspectives the manuscript reconciles---the
+nearest-neighbour-matching / spatial-CV view and the design-based view---so the
+reconciliation is judged fairly. \emph{(Please verify current affiliation and email at
+submission; none is a co-author and there are no collaborative conflicts of
+interest.)}
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=6pt]
+\item \textbf{Prof.\ Hanna Meyer} --- University of M\"unster, Germany.\\
+Lead developer of \texttt{CAST}, the area-of-applicability method and NNDM/kNNDM;
+the closest expert on the methods this paper builds on and audits.
+
+\item \textbf{Prof.\ Alexandre M.\ J.-C.\ Wadoux} --- INRAE / LISAH, Montpellier,
+France.\\
+Leading proponent of design-based map-accuracy assessment; ideal to test that the
+paper's reconciliation treats the design-based (``spatial CV is pessimistic'') case
+fairly.
+
+\item \textbf{Prof.\ Alexander Brenning} --- Friedrich Schiller University Jena,
+Germany.\\
+Author of \texttt{sperrorest} and long-standing work on spatial cross-validation and
+spatial prediction error; strong on the statistical machinery.
+
+\item \textbf{Dr.\ Roozbeh Valavi} --- (SDM / spatial modelling; \texttt{blockCV}
+author).\\
+First author of \texttt{blockCV} and of the presence/absence dataset used in the lead
+case study; expert on spatial blocking for species distribution models.
+
+\item \textbf{Prof.\ Damaris Zurell} --- University of Potsdam, Germany.\\
+Leads work on species-distribution-model evaluation and reporting standards (ODMAP);
+well placed to judge the paper's relevance to ecological reporting practice.
+
+\item \textbf{Prof.\ Gurutzeta Guillera-Arroita} --- (quantitative ecology / SDM
+methods).\\
+Expert on species distribution model evaluation and detectability; a methods-focused
+ecological reviewer independent of the spatial-CV development groups.
+\end{enumerate}
+
+\textbf{Note on balance.} If the editor prefers to limit reviewers who are themselves
+authors of the specific methods extended here (Meyer for NNDM/AOA; Valavi for
+\texttt{blockCV}), Brenning, Wadoux, Zurell and Guillera-Arroita provide a
+fully independent yet equally expert panel.
+
+\medskip
+\textbf{Opposed reviewers.} None.
+
+\end{document}
