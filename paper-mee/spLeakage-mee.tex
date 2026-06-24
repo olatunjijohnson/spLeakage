@@ -199,9 +199,10 @@ bias-corrected accuracy, and optimal validation-survey design
 (Section~\ref{sec:recommend}). Everything is implemented in the open-source
 \texttt{spLeakage} package (Section~\ref{sec:software}). Section~\ref{sec:examples}
 validates the approach with exact algebra, a benchmark against NNDM, real-data
-tests, a 16-dataset audit of field-wide overconfidence, and a disease-mapping case
-study. Section~\ref{sec:discussion} gives practical guidance (Box~2) and discusses
-scope and limitations.
+tests, a 16-dataset audit of field-wide overconfidence, and two real case studies---a
+species distribution model and a disease-prevalence map---that show the audit
+attributing leakage to different causes. Section~\ref{sec:discussion} gives practical
+guidance (Box~2) and discusses scope and limitations.
 
 % ===========================================================================
 \section{A framework: leakage relative to design, estimand and
@@ -569,8 +570,31 @@ weakest short-range leakage---the second, trend-extrapolation channel.}
 \label{fig:metaaudit}
 \end{figure}
 
-\subsection{Case study: mapping malaria prevalence}
+\subsection{Case studies: two real maps, two leakage signatures}
 
+We close with two real applications that a single audit must be able to tell apart:
+a species distribution model whose optimism is genuine spatial autocorrelation, and a
+disease-prevalence map whose apparent leakage is in fact a survey-design artefact.
+Together they show \texttt{spLeakage} attributing leakage to the \emph{right} cause.
+
+\paragraph{Lead case: a species distribution model.}
+We audit a presence/absence SDM built on the south-east Australia dataset of
+\citet{valavi2019blockcv} (500 records; 243 presence; four bioclim covariates),
+predicting a wall-to-wall habitat-suitability map. An ecologist's default---a random
+10-fold split validated with the Brier score---returns an optimistic split:
+$\SLIrho=+0.10$ (90\% CI $+0.07,+0.14$), and the Brier score is \textbf{$42\%$ too
+good} relative to the design-matched block scheme. Two further channels sharpen the
+diagnosis. The covariate-space audit shows the map \emph{extrapolates} the bioclim
+predictors well beyond where the model was tested (deployment covariate-space reach
+$3.73$ vs test reach $1.04$; signed feature leakage $+2.7$)---a concrete
+area-of-applicability warning for the suitability surface. Meanwhile the
+grouped-location channel finds \emph{no} co-located duplicates, so this optimism is
+genuine autocorrelation, not a sampling artefact. Ranking candidate schemes on the
+data reproduces the paper's central nuance: random CV is optimistic ($+0.10$),
+buffered CV is \emph{over-corrected into pessimism} ($-0.22$), and block CV best
+matches deployment ($-0.004$)---a distinction no static decision table provides.
+
+\paragraph{Second case: mapping malaria prevalence.}
 On geolocated \emph{Plasmodium falciparum} prevalence surveys in Nigeria
 \citep{weiss2019mapping} ($n=66$), a naive random split gives $\SLIrho=+0.212$ despite
 a near-zero variogram signal---an apparent paradox the package resolves: the
@@ -578,9 +602,11 @@ grouped-location channel attributes $21.2\%$ of test points to leakage through
 \emph{co-located repeat surveys}, deduplication collapses $\SLIrho$ to $+0.006$, and
 the grouped fix removes it entirely. The refit-free estimator correctly
 \emph{abstained} ($n$ below its training envelope), demonstrating the
-area-of-applicability guard on real data. This shows the multi-channel audit
-disentangling genuine autocorrelation from a survey-design artefact---routine in
-ecological and epidemiological data with revisited sites.
+area-of-applicability guard on real data. Where the SDM's leakage was real
+autocorrelation, here it is a survey-design artefact---routine in ecological and
+epidemiological data with revisited sites (fixed plots, transect re-surveys,
+sentinel stations). The same multi-channel audit reaches opposite, correct verdicts
+in the two cases.
 
 % ===========================================================================
 \section{Discussion}\label{sec:discussion}
@@ -651,9 +677,11 @@ and wrote the manuscript.
 The \texttt{spLeakage} package and all analysis scripts that reproduce the results
 are openly available at \url{https://github.com/olatunjijohnson/spLeakage} (MIT
 licence), with documentation at \url{https://olatunjijohnson.github.io/spLeakage/}.
-All datasets are public (Malaria Atlas Project via \texttt{malariaAtlas};
-\texttt{meuse}, \texttt{ca20}, Paran\'a and the remaining audit fields via
-\texttt{sp}, \texttt{geoR} and \texttt{gstat}). Code archival on Zenodo with a DOI
+All datasets are public (the south-east Australia presence/absence SDM data and
+bioclim covariates via \texttt{blockCV}; Malaria Atlas Project via
+\texttt{malariaAtlas}; \texttt{meuse}, \texttt{ca20}, Paran\'a and the remaining
+audit fields via \texttt{sp}, \texttt{geoR} and \texttt{gstat}). Code archival on
+Zenodo with a DOI
 will accompany acceptance.
 
 \bibliography{refs}
