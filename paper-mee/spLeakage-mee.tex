@@ -583,7 +583,7 @@ We audit a presence/absence SDM built on the south-east Australia dataset of
 predicting a wall-to-wall habitat-suitability map. An ecologist's default---a random
 10-fold split validated with the Brier score---returns an optimistic split:
 $\SLIrho=+0.10$ (90\% CI $+0.07,+0.14$), and the Brier score is \textbf{$42\%$ too
-good} relative to the design-matched block scheme. Two further channels sharpen the
+good} relative to the design-matched block scheme (Fig.~\ref{fig:sdm}). Two further channels sharpen the
 diagnosis. The covariate-space audit shows the map \emph{extrapolates} the bioclim
 predictors well beyond where the model was tested (deployment covariate-space reach
 $3.73$ vs test reach $1.04$; signed feature leakage $+2.7$)---a concrete
@@ -593,6 +593,21 @@ genuine autocorrelation, not a sampling artefact. Ranking candidate schemes on t
 data reproduces the paper's central nuance: random CV is optimistic ($+0.10$),
 buffered CV is \emph{over-corrected into pessimism} ($-0.22$), and block CV best
 matches deployment ($-0.004$)---a distinction no static decision table provides.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/F5_sdm.png}
+\caption{Auditing a species distribution model (south-east Australia
+presence/absence; \citealp{valavi2019blockcv}). (a)~Per-point leakage map: most test
+points are easier under random CV than at deployment. (b)~The CV nearest-neighbour
+distances (red) sit far to the left of the deployment distances (blue): test points
+are much closer to training data than the wall-to-wall map will be ($\phi$ = variogram
+range). (c)~Signed SLI by candidate scheme---random CV is optimistic, buffered CV is
+over-corrected into pessimism, block CV best matches deployment. (d)~Consequence: the
+Brier score reported under random CV ($0.131$) is $42\%$ better than the honest,
+design-matched value ($0.224$).}
+\label{fig:sdm}
+\end{figure}
 
 \paragraph{Second case: mapping malaria prevalence.}
 On geolocated \emph{Plasmodium falciparum} prevalence surveys in Nigeria
