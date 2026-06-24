@@ -210,7 +210,8 @@ interoperates with \texttt{CAST}, \texttt{blockCV}, \texttt{spatialsample} and
 \texttt{mlr3spatiotempcv}. Section~\ref{sec:results} validates every claim with
 exact Gaussian-process algebra, a head-to-head benchmark against NNDM, an
 out-of-sample emulator study, independent real-data validation, a 16-dataset
-meta-audit, and a malaria case study. Section~\ref{sec:discussion} discusses scope,
+meta-audit, and two real case studies (a species distribution model and a malaria
+prevalence map). Section~\ref{sec:discussion} discusses scope,
 limitations and the new two-channel decomposition of optimism that the meta-audit
 reveals.
 
@@ -570,7 +571,7 @@ deleak_estimate(reported_rmse = 0.42, data = data,
 
 We validate each claim in turn: the theory (exact GP algebra), the benchmark against
 NNDM, the emulator (out-of-sample), independent real-data validation, the
-meta-audit, the malaria case study, and the validation-design tool. Scripts to
+meta-audit, two real case studies, and the validation-design tool. Scripts to
 reproduce every result ship in the package's \texttt{data-raw/} directory.
 
 \subsection{The SLI is a near-sufficient statistic for optimism}\label{sec:res-theory}
@@ -742,20 +743,52 @@ the smallest short-range leakage signal---the second, trend-extrapolation channe
 \label{fig:metaaudit}
 \end{figure}
 
-\subsection{Case study: malaria prevalence in Nigeria}\label{sec:res-casestudy}
+\subsection{Real-data case studies: two leakage signatures}\label{sec:res-casestudy}
 
-On Malaria Atlas Project \emph{Plasmodium falciparum} prevalence
-\citep{weiss2019mapping} ($n=66$ geolocated surveys), a naive random 10-fold split
-gives $\SLIrho=+0.212$ despite a near-zero variogram signal proportion---an apparent
-contradiction the package resolves. Deduplicating co-located repeat surveys
-collapses $\SLIrho$ to $+0.006$; the grouped-leakage channel reports that
-\textbf{$21.2\%$} of test points leak through a shared location---numerically equal
-to $c_{\text{obs}}=0.212$, the two diagnostics agreeing---and \texttt{group\_kfold()}
-drives it to $0\%$. Empirical optimism is a modest $+1.8\%$ (co-located records
-differ by year; weak signal), a textbook illustration of the leakage-vs-optimism
-distinction in the wild. The emulator \emph{correctly refused} the query
-($n$ below its training envelope), demonstrating the area-of-applicability guard on
-real data and deferring to the empirical route.
+Two real applications show the multi-channel audit attributing leakage to the correct
+cause: a species distribution model whose optimism is genuine autocorrelation, and a
+disease-prevalence map whose apparent leakage is a survey-design artefact.
+
+\paragraph{Species distribution model.} We audit a presence/absence SDM on the
+south-east Australia dataset of \citet{valavi2019blockcv} (500 records; 243 presence;
+four bioclim covariates), predicting a wall-to-wall suitability map. A naive random
+10-fold split validated with the Brier score is optimistic: $\SLIrho=+0.10$ (90\% CI
+$+0.07,+0.14$) and the Brier score is $42\%$ better than the design-matched block
+scheme (Fig.~\ref{fig:sdm}). The covariate-space channel further shows the map
+\emph{extrapolates} the bioclim predictors well beyond the tested range (deployment
+feature-space reach $3.73$ vs test $1.04$; signed feature leakage $+2.7$), an
+area-of-applicability warning; and the grouped-location channel finds \emph{no}
+co-located duplicates, so the optimism is real autocorrelation. Ranking schemes on the
+data reproduces the theory's nuance: random CV optimistic ($+0.10$), buffered CV
+over-corrected into pessimism ($-0.22$), block CV best matched ($-0.004$).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/F5_sdm.png}
+\caption{Auditing a species distribution model (south-east Australia
+presence/absence; \citealp{valavi2019blockcv}). (a)~Per-point leakage map.
+(b)~CV nearest-neighbour distances (red) sit far left of deployment distances
+(blue)---test points are much closer to training data than the wall-to-wall map will
+be ($\phi$ = variogram range). (c)~Signed SLI by scheme: random optimistic, buffered
+over-corrected into pessimism, block best matched. (d)~The Brier score reported under
+random CV ($0.131$) is $42\%$ better than the honest design-matched value ($0.224$).}
+\label{fig:sdm}
+\end{figure}
+
+\paragraph{Malaria prevalence.} On Malaria Atlas Project \emph{Plasmodium falciparum}
+prevalence \citep{weiss2019mapping} ($n=66$ geolocated surveys), a naive random
+10-fold split gives $\SLIrho=+0.212$ despite a near-zero variogram signal
+proportion---an apparent contradiction the package resolves. Deduplicating co-located
+repeat surveys collapses $\SLIrho$ to $+0.006$; the grouped-leakage channel reports
+that \textbf{$21.2\%$} of test points leak through a shared location---numerically
+equal to $c_{\text{obs}}=0.212$, the two diagnostics agreeing---and
+\texttt{group\_kfold()} drives it to $0\%$. Empirical optimism is a modest $+1.8\%$
+(co-located records differ by year; weak signal), a textbook illustration of the
+leakage-vs-optimism distinction in the wild. The emulator \emph{correctly refused} the
+query ($n$ below its training envelope), demonstrating the area-of-applicability guard
+on real data and deferring to the empirical route. Where the SDM's leakage was real
+autocorrelation, here it is a survey-design artefact---the same audit reaching
+opposite, correct verdicts.
 
 \subsection{Designing validation surveys}\label{sec:res-design}
 
@@ -819,7 +852,8 @@ it adds a missing diagnostic layer to the spatial-prediction workflow.
 The \texttt{spLeakage} package, including all analysis scripts in
 \texttt{data-raw/} that reproduce the results in Section~\ref{sec:results}, is
 openly available at \url{https://github.com/olatunjijohnson/spLeakage} under an MIT
-licence. All datasets used are public (Malaria Atlas Project via the
+licence. All datasets used are public (the south-east Australia presence/absence SDM
+data and bioclim covariates via \texttt{blockCV}; Malaria Atlas Project via the
 \texttt{malariaAtlas} R package; \texttt{meuse}, \texttt{ca20}, Paran\'a and the
 remaining meta-audit fields via \texttt{sp}, \texttt{geoR} and \texttt{gstat}).
 

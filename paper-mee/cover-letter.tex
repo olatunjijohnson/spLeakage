@@ -1,0 +1,84 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[a4paper,top=1.5cm,bottom=1.5cm,left=2.4cm,right=2.4cm]{geometry}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{parskip}
+\pagestyle{empty}
+\setlength{\parskip}{0.5em}
+
+\begin{document}
+
+\noindent\begin{flushright}
+Olatunji Johnson\\
+Department of Mathematics\\
+University of Manchester\\
+Manchester, UK\\
+\texttt{olatunji.johnson@manchester.ac.uk}\\
+24 June 2026
+\end{flushright}
+
+\noindent The Editors\\
+\emph{Methods in Ecology and Evolution}\\
+British Ecological Society
+
+\medskip
+\noindent Dear Editors,
+
+I am pleased to submit my manuscript, \textbf{``Auditing spatial information leakage
+in ecological prediction: quantifying the optimism in map accuracy with the
+\texttt{spLeakage} R~package''}, for consideration as a Research Article / Application
+in \emph{Methods in Ecology and Evolution}.
+
+Ecologists increasingly turn field observations into wall-to-wall maps of species
+occurrence, abundance, biomass and disease risk, and judge them by an accuracy
+estimated through cross-validation. When data are spatially autocorrelated, ordinary
+random cross-validation grades a model on near-interpolation rather than on the
+extrapolation the map is actually used for, so reported accuracy is optimistically
+inflated. A mature toolkit exists to \emph{prevent} this by building spatially
+separated folds (including NNDM/kNNDM and \texttt{blockCV}, published in this
+journal), but \textbf{no tool audits the validation an analyst has already used, or a
+published map, and reports how inflated the accuracy is}. The field is moreover
+divided over whether spatial cross-validation is even appropriate---a controversy
+that has left practitioners without clear guidance.
+
+My manuscript addresses both gaps with a single idea: spatial leakage and optimism
+are well-defined only relative to a declared sampling \emph{design}, \emph{estimand}
+and prediction \emph{target}. This reframing reconciles the controversy (each side is
+correct in a different setting) and makes optimism computable. On this basis I
+contribute (i) a \emph{signed} Spatial Leakage Index that audits any split and maps
+where it leaks; (ii) a formal estimand for optimism under a Gaussian process, with a
+closed form and a Wasserstein bound; (iii) a refit-free estimator of accuracy
+inflation that flags when it is asked to extrapolate; and (iv) design-aware guidance,
+a bias-corrected accuracy that can correct a published number, and optimal
+validation-survey design. Everything is implemented in the open-source
+\texttt{spLeakage} package, which \emph{audits rather than generates} folds and
+interoperates with the existing ecosystem.
+
+The work is a strong fit for \emph{MEE}: it builds on and complements methods this
+journal has championed (NNDM, the area of applicability, \texttt{blockCV}), pairs a
+methodological advance with documented open-source software, and speaks to emerging
+reporting standards for distribution models. Key results: against exact
+Gaussian-process algebra the index is a near-sufficient statistic for true optimism
+($r=0.98$) and recovers the \emph{direction} of bias that unsigned matching statistics
+cannot ($r=0.98$ vs $-0.09$); auditing 16 real datasets, reported accuracy is
+optimistic in \emph{every} case (median 22\%); and two contrasting case studies---a
+species distribution model and a malaria-prevalence map---show the audit correctly
+attributing leakage to genuine autocorrelation in one and to a survey-design artefact
+in the other.
+
+The manuscript is original, is not under consideration elsewhere, and has not been
+published previously; there are no conflicts of interest. The \texttt{spLeakage}
+package and all analysis code are openly available at
+\url{https://github.com/olatunjijohnson/spLeakage} (documentation at
+\url{https://olatunjijohnson.github.io/spLeakage/}); all datasets are public, and code
+will be archived with a DOI on acceptance. Suitable referees could be drawn from the
+spatial cross-validation and species distribution modelling communities, and I am
+happy to provide specific names on request. Thank you for considering my submission.
+
+\noindent Yours sincerely,\\[0.4em]
+Olatunji Johnson
+
+\end{document}
